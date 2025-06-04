@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import './App.css'
 
 function App() {
   const [response, setResponse] = useState<string | null>(null);
@@ -15,8 +14,8 @@ function App() {
   }, []);
 
   return (
-    <div>
-      <h1>API Response Test</h1>
+    <div className='flex flex-col items-center justify-center h-screen text-center'>
+      <h1 className='text-4xl font-bold mb-4'>API Response Test</h1>
       <pre>{response || 'Loading...'}</pre>
     </div>
   )
