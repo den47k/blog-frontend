@@ -1,0 +1,19 @@
+services:
+  frontend:
+    build: .
+    ports:
+      - "3000:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_API_BASE_URL=http://localhost/api
+    stdin_open: true
+    tty: true
+    networks:
+      - blog-network
+
+networks:
+  blog-network:
+    external: true
