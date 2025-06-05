@@ -9,13 +9,17 @@ export default defineConfig({
     tailwindcss()
   ],
   server: {
-    host: '0.0.0.0', // Add this line
+    host: '0.0.0.0',
     port: 5173,
     proxy: {
       '/api': {
         target: 'http://backend',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/sanctum': {
+        target: 'http://backend',
+        changeOrigin: true
       }
     }
   }

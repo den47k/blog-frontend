@@ -1,22 +1,34 @@
 import { useEffect, useState } from 'react'
+import useApi from './hooks/useApi';
 
 function App() {
-  const [response, setResponse] = useState<string | null>(null);
+  const [response, setResponse] = useState<any>(null);
+  const { loading, get } = useApi();
 
   useEffect(() => {
-    fetch('http://localhost/api/test')
-      .then((res: Response) => {
-        console.log('Status:', res.status);
-        return res.text();
-      })
-      .then((text: string) => setResponse(text))
-      .catch((err: Error) => setResponse(err.message));
+    const fetchData = async () => {
+      try {
+        const data = await get('/test');
+        setResponse(data);
+      } catch (err) {
+        console.error('Failed to load messages', err);
+        setResponse('Failed to load messages');
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
     <div className='flex flex-col items-center justify-center h-screen text-center'>
       <h1 className='text-4xl font-bold mb-4'>API Response Test</h1>
-      <pre>{response || 'Loading...'}</pre>
+      <pre>
+        {loading 
+          ? 'Loading...' 
+          : typeof response === 'string' 
+            ? response 
+            : JSON.stringify(response)}
+      </pre>
     </div>
   )
 }
