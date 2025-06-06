@@ -3,12 +3,12 @@ import useApi from './hooks/useApi';
 
 function App() {
   const [response, setResponse] = useState<any>(null);
-  const { loading, get } = useApi();
+  const { loading, post } = useApi();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await get('/test');
+        const data = await post('/test');
         setResponse(data);
       } catch (err) {
         console.error('Failed to load messages', err);
@@ -29,6 +29,10 @@ function App() {
             ? response 
             : JSON.stringify(response)}
       </pre>
+
+      <button onClick={() => {
+        post('/test')
+      }}>huy</button>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import api, { ensureCsrfToken } from "../lib/api";
+import api from "../lib/api";
 import type { AxiosRequestConfig } from "axios";
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
@@ -18,8 +18,6 @@ const useApi = () => {
         setError(null);
 
         try {
-            if (method !== 'get') await ensureCsrfToken();
-
             const response = await api[method](url, data, config);
             return response.data;
         } catch (err) {

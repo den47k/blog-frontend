@@ -15,11 +15,18 @@ export default defineConfig({
       '/api': {
         target: 'http://backend',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => path.replace(/^\/api/, '/api')
       },
       '/sanctum': {
         target: 'http://backend',
-        changeOrigin: true
+        changeOrigin: true,
+        rewrite: (path) => path
+      },
+      '/app': {
+        target: 'http://backend:8080',
+        changeOrigin: true,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/app/, '')
       }
     }
   }
