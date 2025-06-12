@@ -1,21 +1,25 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosInstance } from "axios";
+import axios, {
+  AxiosError,
+  type InternalAxiosRequestConfig,
+  type AxiosInstance,
+} from "axios";
 
 // API instance initialization
 const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
+  withXSRFToken: true,
   headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  }
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
 });
-
 
 // CSRF Token Handling
 let csrfTokenRequest: Promise<void> | null = null;
 
 const fetchCsrfToken = async (): Promise<void> => {
-  await axios.get('/sanctum/csrf-cookie', {
+  await axios.get("/sanctum/csrf-cookie", {
     withCredentials: true,
   });
 };
@@ -38,11 +42,10 @@ export const resetCsrfToken = (): Promise<void> => {
   return ensureCsrfToken();
 };
 
-
 // Request interceptor
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const method = config.method?.toUpperCase();
-  if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+  if (method && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
     await ensureCsrfToken();
   }
   return config;
@@ -50,7 +53,7 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
 
 // Response interceptor
 api.interceptors.response.use(
-  response => response,
+  (response) => response,
   async (error: AxiosError) => {
     if (error.response?.status === 419) {
       await fetchCsrfToken();
@@ -58,8 +61,7 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      console.error('Authentication required');
-      // ToDo: Add auth redirect logic
+      console.error("Authentication required");
     }
 
     return Promise.reject(error);
