@@ -118,3 +118,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+/* Progress bar color */
+#nprogress .bar {
+  background-color: #e11d48 !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #e11d48, 0 0 5px #e11d48 !important;
+}

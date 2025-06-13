@@ -3,6 +3,7 @@ import type { User } from "@/types";
 import type { AxiosError } from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { startNavigationProgress, stopNavigationProgress } from "@/lib/nprogress";
 
 type AuthContextType = {
   user: User | null;
@@ -43,18 +44,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     fetchUser();
   }, []);
 
+  console.log(user);
+
   const login = async (credentials: { email: string; password: string }) => {
-    setIsLoading(true);
+    startNavigationProgress();
     try {
-      await api.post("/login", credentials);
-      await fetchUser();
+      const response = await api.post("/login", credentials);
+      setUser(response.data.user);
       const redirectTo = location.state?.from?.pathname || "/";
       navigate(redirectTo, { replace: true });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       throw new Error(error.response?.data?.message || "Login failed");
     } finally {
-      setIsLoading(false);
+      stopNavigationProgress();
     }
   };
 
@@ -64,10 +67,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string;
     password_confirmation: string;
   }) => {
-    setIsLoading(true);
+    startNavigationProgress();
     try {
-      await api.post("/register", userData);
-      await fetchUser();
+      const response = await api.post("/register", userData);
+      console.log(response);
+      setUser(response.data.user);
       navigate("/email-verification-notice", { replace: true });
     } catch (err) {
       const error = err as AxiosError<{ errors?: Record<string, string[]> }>;
@@ -76,12 +80,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         : ["Registration failed"];
       throw new Error(errorMessages.join(", "));
     } finally {
-      setIsLoading(false);
+      stopNavigationProgress();
     }
   };
 
   const logout = async () => {
-    setIsLoading(true);
+    startNavigationProgress();
     try {
       await api.post("/logout");
       setUser(null);
@@ -89,13 +93,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err) {
       console.error("Logout failed:", err);
     } finally {
-      setIsLoading(false);
+      stopNavigationProgress();
     }
   };
 
   const resendVerification = async () => {
     try {
-      await api.post("/email/resend");
+      await api.post("/email/resend", {email: user?.email});
     } catch (err) {
       throw new Error("Failed to resend verification email");
     }

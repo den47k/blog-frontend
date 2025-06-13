@@ -1,108 +1,257 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "@/components/ui/label";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  LockIcon,
+  MailIcon,
+  UserIcon,
+} from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router";
+import { z } from "zod";
+
+const registerSchema = z
+  .object({
+    username: z
+      .string()
+      .min(3, "Username must be at least 3 characters")
+      .max(20, "Username must be less than 20 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(50, "Password must be less than 50 characters"),
+    passwordConfirmation: z.string(),
+  })
+  .refine((data) => data.password === data.passwordConfirmation, {
+    message: "Passwords do not match",
+    path: ["passwordConfirmation"],
+  });
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 const Register = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirmation, setPasswordConfirmation] = useState("");
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register } = useAuth();
+  const { register: authRegister } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (password !== passwordConfirmation) {
-      setError("Passwords do not match");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setError("");
-    
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
+    setServerError("");
     try {
-      await register({ name, email, password, password_confirmation: passwordConfirmation });
+      await authRegister({
+        name: data.username,
+        email: data.email,
+        password: data.password,
+        password_confirmation: data.passwordConfirmation,
+      });
+      // Redirect after successful registration
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.message || "Registration failed. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      if (err.response?.data?.errors) {
+        // Handle API validation errors
+        const errors = err.response.data.errors;
+        if (errors.email) {
+          setError("email", { message: errors.email[0] });
+        }
+        if (errors.username) {
+          setError("username", { message: errors.username[0] });
+        }
+        if (errors.password) {
+          setError("password", { message: errors.password[0] });
+        }
+      } else {
+        setServerError(err.message || "Registration failed. Please try again.");
+      }
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Create an Account</h1>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            required
-            disabled={isSubmitting}
-          />
+    <div className="min-h-screen w-full flex items-center justify-center bg-zinc-950 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">DarkChat</h1>
+          <p className="text-zinc-400">Create your account</p>
         </div>
-        
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            required
-            disabled={isSubmitting}
-          />
-        </div>
-        
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            required
-            disabled={isSubmitting}
-          />
-        </div>
-        
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Confirm Password</label>
-          <input
-            type="password"
-            value={passwordConfirmation}
-            onChange={(e) => setPasswordConfirmation(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            required
-            disabled={isSubmitting}
-          />
-        </div>
-        
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Registering..." : "Register"}
-        </button>
-      </form>
-      
-      <div className="mt-4 text-center">
-        <button
-          onClick={() => navigate("/login", { state: { from: location.state?.from } })}
-          className="text-blue-600 hover:underline"
-        >
-          Already have an account? Login
-        </button>
+
+        <Card className="bg-zinc-900 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">Sign Up</CardTitle>
+            <CardDescription className="text-zinc-400">
+              Enter your details to create an account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Username Field */}
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-zinc-300">
+                  Username
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                    <UserIcon size={18} />
+                  </div>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="johndoe"
+                    className={`pl-10 bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 ${
+                      errors.email ? "border-red-500" : ""
+                    }`}
+                    {...register("username")}
+                  />
+                </div>
+                {errors.username && (
+                  <p className="text-red-500 text-sm">
+                    {errors.username.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-zinc-300">
+                  Email
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                    <MailIcon size={18} />
+                  </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    className={`pl-10 bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 ${
+                      errors.email ? "border-red-500" : ""
+                    }`}
+                    {...register("email")}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-zinc-300">
+                  Password
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                    <LockIcon size={18} />
+                  </div>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className={`pl-10 pr-10 bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 ${
+                      errors.password ? "border-red-500" : ""
+                    }`}
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon size={18} />
+                    ) : (
+                      <EyeIcon size={18} />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Password Confirmation Field */}
+              <div className="space-y-2">
+                <Label htmlFor="passwordConfirmation" className="text-zinc-300">
+                  Confirm Password
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                    <LockIcon size={18} />
+                  </div>
+                  <Input
+                    id="passwordConfirmation"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className={`pl-10 pr-10 bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 ${
+                      errors.passwordConfirmation ? "border-red-500" : ""
+                    }`}
+                    {...register("passwordConfirmation")}
+                  />
+                </div>
+                {errors.passwordConfirmation && (
+                  <p className="text-red-500 text-sm">
+                    {errors.passwordConfirmation.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Server Error */}
+              {serverError && (
+                <p className="text-red-500 text-sm text-center">
+                  {serverError}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Creating account..." : "Create Account"}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4 border-t border-zinc-800 pt-4 -mt-4">
+            <div className="text-sm text-zinc-400 text-center">
+              Already have an account?{" "}
+              <button
+                onClick={() =>
+                  navigate("/login", {
+                    state: { from: location.state?.from },
+                  })
+                }
+                className="text-rose-400 hover:text-rose-300 font-medium cursor-pointer"
+              >
+                Sign in
+              </button>
+            </div>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );

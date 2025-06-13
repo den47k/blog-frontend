@@ -7,21 +7,21 @@ type ProtectedRouteProps = {
   requireAuth?: boolean;
   requireVerified?: boolean;
   redirectPath?: string;
-  preventIfVerified?: boolean; // New prop to block verified users
+  preventIfVerified?: boolean;
 };
 
 const ProtectedRoute = ({ 
   children, 
   requireAuth = false,
   requireVerified = false,
-  preventIfVerified = false, // Default to false
+  preventIfVerified = false,
   redirectPath = "/login"
 }: ProtectedRouteProps) => {
   const { isAuthenticated, isVerified, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <></>;
   }
 
   // Block verified users from accessing this route (e.g. verification notice)

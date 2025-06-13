@@ -5,12 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function WorkInProgress() {
   const { logout } = useAuth();
   const [response, setResponse] = useState<any>(null);
-  const { loading, get } = useApi();
+  const { loading, post } = useApi();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await get("/user");
+        const data = await post("/test");
         setResponse(data);
       } catch (err) {
         console.error("Failed to load messages", err);

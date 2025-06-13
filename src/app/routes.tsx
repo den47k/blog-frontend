@@ -1,16 +1,32 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router";
+import { createBrowserRouter, Navigate, Outlet, useNavigation } from "react-router";
 import WorkInProgress from "@/pages/WorkInProgress";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
-import VerifyEmail from "@/pages/auth/VerifyEmail";
 import VerifyEmailNotice from "@/pages/auth/VerifyEmailNotice";
 import ProtectedRoute from "@/components/features/ProtectedRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { startNavigationProgress, stopNavigationProgress } from "@/lib/nprogress";
+import { useEffect } from "react";
+
+const NavigationProgress = () => {
+  const navigation = useNavigation();
+  
+  useEffect(() => {
+    if (navigation.state === "loading") {
+      startNavigationProgress();
+    } else {
+      stopNavigationProgress();
+    }
+  }, [navigation.state]);
+
+  return null;
+};
 
 export const router = createBrowserRouter([
   {
     element: (
       <AuthProvider>
+        <NavigationProgress />
         <Outlet />
       </AuthProvider>
     ),
@@ -38,10 +54,6 @@ export const router = createBrowserRouter([
             <VerifyEmailNotice />
           </ProtectedRoute>
         ),
-      },
-      {
-        path: "/email/verify/:id/:hash",
-        element: <VerifyEmail />,
       },
       {
         path: "/",

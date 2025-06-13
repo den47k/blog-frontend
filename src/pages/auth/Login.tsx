@@ -1,80 +1,199 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+
+import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router";
+import { z } from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address").min(1, "Email is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  remember: z.boolean().optional(),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState("");
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setServerError("");
     try {
-      await login({ email, password });
+      await login(data);
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.message || "Login failed. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      setServerError(err.message || "Login failed. Please try again.");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Login to Your Account</h1>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            required
-            disabled={isSubmitting}
-          />
+    <div className="min-h-screen w-full flex items-center justify-center bg-zinc-950 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">DarkChat</h1>
+          <p className="text-zinc-400">Connect with friends in the shadows</p>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            required
-            disabled={isSubmitting}
-          />
-        </div>
+        <Card className="bg-zinc-900 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">Sign In</CardTitle>
+            <CardDescription className="text-zinc-400">
+              Enter your credentials to access your account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-zinc-300">
+                  Email
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                    <MailIcon size={18} />
+                  </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    className={`pl-10 bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 ${
+                      errors.email ? "border-red-500" : ""
+                    }`}
+                    {...register("email")}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Logging in..." : "Login"}
-        </button>
-      </form>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label htmlFor="password" className="text-zinc-300">
+                    Password
+                  </Label>
+                  <a
+                    href="/forgot-password"
+                    className="text-sm text-rose-400 hover:text-rose-300"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                    <LockIcon size={18} />
+                  </div>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className={`pl-10 pr-10 bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 ${
+                      errors.password ? "border-red-500" : ""
+                    }`}
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon size={18} />
+                    ) : (
+                      <EyeIcon size={18} />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
 
-      <div className="mt-4 text-center">
-        <button
-          onClick={() =>
-            navigate("/register", { state: { from: location.state?.from } })
-          }
-          className="text-blue-600 hover:underline"
-        >
-          Don't have an account? Register
-        </button>
+              <div className="flex items-center space-x-2">
+                <Controller
+                  name="remember"
+                  control={control}
+                  defaultValue={false}
+                  render={({ field }) => (
+                    <Checkbox
+                      id="remember"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="border-zinc-600 data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600"
+                    />
+                  )}
+                />
+                <label
+                  htmlFor="remember"
+                  className="text-sm text-zinc-300 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Remember me
+                </label>
+              </div>
+
+              {serverError && (
+                <p className="text-red-500 text-sm text-center">
+                  {serverError}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full bg-rose-600 hover:bg-rose-700 text-white ${
+                  isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {isSubmitting ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4 border-zinc-800 pt-4 -mt-4">
+            <div className="text-sm text-zinc-400 text-center">
+              Don't have an account?{" "}
+              <button
+                onClick={() =>
+                  navigate("/register", {
+                    state: { from: location.state?.from },
+                  })
+                }
+                className="text-rose-400 hover:text-rose-300 font-medium cursor-pointer"
+              >
+                Create account
+              </button>
+            </div>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
