@@ -3,7 +3,11 @@ import type { User } from "@/types";
 import type { AxiosError } from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { startNavigationProgress, stopNavigationProgress } from "@/lib/nprogress";
+import echo from "@/lib/echo";
+import {
+  startNavigationProgress,
+  stopNavigationProgress,
+} from "@/lib/nprogress";
 
 type AuthContextType = {
   user: User | null;
@@ -42,9 +46,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     fetchUser();
+
+    return () => {
+      if (user) echo.leave(`user.${user.id}`);
+    };
   }, []);
 
-  console.log(user);
+  useEffect(() => {
+    if (user && !user.email_verified_at) {
+      const channel = echo.private(`user.${user.id}`);
+
+      channel.listen(".EmailVerified", (e: any) => {
+        setUser({ ...user, email_verified_at: e.user.email_verified_at });
+      });
+
+      return () => {
+        channel.stopListening(".EmailVerified");
+      };
+    }
+  }, [user]);
 
   const login = async (credentials: { email: string; password: string }) => {
     startNavigationProgress();
@@ -70,7 +90,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     startNavigationProgress();
     try {
       const response = await api.post("/register", userData);
-      console.log(response);
       setUser(response.data.user);
       navigate("/email-verification-notice", { replace: true });
     } catch (err) {
@@ -98,10 +117,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const resendVerification = async () => {
+    startNavigationProgress();
     try {
-      await api.post("/email/resend", {email: user?.email});
+      await api.post("/email/resend", { email: user?.email });
     } catch (err) {
       throw new Error("Failed to resend verification email");
+    } finally {
+      stopNavigationProgress();
     }
   };
 

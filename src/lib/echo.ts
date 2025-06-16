@@ -1,6 +1,6 @@
-import axios from "axios";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
+import api from "./api";
 
 declare global {
   interface Window {
@@ -29,8 +29,8 @@ const initializeEcho = () => {
           socketId: string,
           callback: (error: boolean, data: any) => void
         ) => {
-          axios
-            .post("/api/broadcasting/auth", {
+          api
+            .post("/broadcasting/auth", {
               socket_id: socketId,
               channel_name: channel.name,
             })
