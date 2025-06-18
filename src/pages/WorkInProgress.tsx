@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useApi from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
+import { AppLayout } from "@/components/layouts/AppLayout";
 
 export default function WorkInProgress() {
   const { logout } = useAuth();
@@ -22,8 +23,8 @@ export default function WorkInProgress() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="text-center">
+    <AppLayout>
+      <div className="flex flex-col items-center justify-center text-center">
         <h1 className="text-4xl font-bold text-white mb-2">Work in Progress</h1>
 
         <h2 className="text-3xl font-mono mb-4 mt-12">API Response Test</h2>
@@ -37,6 +38,6 @@ export default function WorkInProgress() {
 
         <button onClick={async () => await logout()}>Logout</button>
       </div>
-    </div>
+    </AppLayout>
   );
 }

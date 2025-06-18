@@ -18,6 +18,7 @@ type AuthContextType = {
   register: (userData: {
     name: string;
     email: string;
+    tag: string;
     password: string;
     password_confirmation: string;
   }) => Promise<void>;
