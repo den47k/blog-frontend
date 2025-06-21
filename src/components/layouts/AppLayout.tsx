@@ -1,11 +1,13 @@
-import type { ReactNode } from "react";
-import { AppSidebar } from "../features/AppSidebar";
+import { AppSidebar } from "../features/sidebar/AppSidebar";
+import { Outlet } from "react-router";
 
-export const AppLayout = ({ children }: { children: ReactNode }) => {
+export const AppLayout = () => {
   return (
     <div className="h-screen bg-zinc-950 flex">
       <AppSidebar />
-      {children}
+      <main className="flex-1 flex">
+        <Outlet />
+      </main>
     </div>
   );
 };

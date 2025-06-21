@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import useApi from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
-import { AppLayout } from "@/components/layouts/AppLayout";
 
 export default function WorkInProgress() {
   const { logout } = useAuth();
@@ -23,21 +22,19 @@ export default function WorkInProgress() {
   }, []);
 
   return (
-    <AppLayout>
-      <div className="flex flex-col items-center justify-center text-center">
-        <h1 className="text-4xl font-bold text-white mb-2">Work in Progress</h1>
+    <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <h1 className="text-4xl font-bold text-white mb-2">Work in Progress</h1>
 
-        <h2 className="text-3xl font-mono mb-4 mt-12">API Response Test</h2>
-        <pre>
-          {loading
-            ? "Loading..."
-            : typeof response === "string"
-            ? response
-            : JSON.stringify(response)}
-        </pre>
+      <h2 className="text-3xl text-white font-mono mb-4 mt-12">API Response Test</h2>
+      <pre className="text-white">
+        {loading
+          ? "Loading..."
+          : typeof response === "string"
+          ? response
+          : JSON.stringify(response)}
+      </pre>
 
-        <button onClick={async () => await logout()}>Logout</button>
-      </div>
-    </AppLayout>
+      <button className="text-white" onClick={async () => await logout()}>Logout</button>
+    </div>
   );
 }

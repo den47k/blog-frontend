@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/features/ProtectedRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { startNavigationProgress, stopNavigationProgress } from "@/lib/nprogress";
 import { useEffect } from "react";
+import { AppLayout } from "@/components/layouts/AppLayout";
 
 const NavigationProgress = () => {
   const navigation = useNavigation();
@@ -59,9 +60,19 @@ export const router = createBrowserRouter([
         path: "/",
         element: (
           <ProtectedRoute requireAuth={true} requireVerified={true}>
-            <WorkInProgress />
+            <AppLayout />
           </ProtectedRoute>
         ),
+        children: [
+          {
+            index: true,
+            element: <WorkInProgress />
+          },
+          {
+            path: ":userTag",
+            element: <WorkInProgress />
+          },
+        ]
       },
       {
         path: "*",
