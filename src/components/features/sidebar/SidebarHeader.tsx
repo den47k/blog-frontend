@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
 import { Menu, SearchIcon, UserPlusIcon } from "lucide-react";
 
 interface SidebarHeaderProps {
@@ -8,6 +9,8 @@ interface SidebarHeaderProps {
 }
 
 export const SidebarHeader = ({ onAddChatClick }: SidebarHeaderProps) => {
+  const { user } = useAuth();
+
   return (
     <div className="p-4 border-b border-zinc-700">
       <div className="flex items-center justify-between mb-4">
@@ -15,11 +18,14 @@ export const SidebarHeader = ({ onAddChatClick }: SidebarHeaderProps) => {
           <Avatar className="h-10 w-10 flex-shrink-0">
             <AvatarImage src="/placeholder.svg?height=40&width=40" />
             <AvatarFallback className="bg-rose-600 text-white">
-              JD
+              {user?.name
+                .split(" ")
+                .map((n) => n[0].toUpperCase())
+                .join("")}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <h2 className="text-white font-semibold truncate">John Doe</h2>
+            <h2 className="text-white font-semibold truncate">{user?.name}</h2>
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
               <span className="text-xs text-zinc-400">Online</span>

@@ -2,8 +2,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useApi from "@/hooks/useApi";
+import type { User } from "@/types";
 import { ArrowLeftIcon, AtSign, UserIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface AddConversationViewProps {
   onBackClick: () => void;
@@ -70,28 +71,49 @@ export const AddConversationView = ({
 };
 
 const PrivateConversationView = () => {
-  const { post } = useApi();
+  const { get, post, loading: isCreating } = useApi();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const suggestedUsers = [
-    {
-      name: "Alex Thompson",
-      username: "@alexthompson",
-      avatar: "/placeholder.svg?height=32&width=32",
-      online: true,
-    },
-    {
-      name: "Maria Garcia",
-      username: "@mariagarcia",
-      avatar: "/placeholder.svg?height=32&width=32",
-      online: false,
-    },
-    {
-      name: "David Kim",
-      username: "@davidkim",
-      avatar: "/placeholder.svg?height=32&width=32",
-      online: true,
-    },
-  ];
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const debounceTimer = setTimeout(() => {
+      get<{ data: User[] }>(`/users/search?query=${searchQuery}`)
+        .then((response) => {
+          setSearchResults(response.data);
+        })
+        .catch((error) => {
+          console.error("User search failed:", error);
+          setSearchResults([]);
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, get]);
+
+  const handleCreateConversation = async (
+    userId: string,
+    shouldJoinNow: boolean
+  ) => {
+    try {
+      await post("/conversations/private", {
+        user_id: userId,
+        should_join_now: shouldJoinNow,
+      });
+    } catch (error) {
+      console.error("Failed to create conversation:", error);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -100,8 +122,10 @@ const PrivateConversationView = () => {
           Find User
         </label>
         <Input
-          placeholder="Enter username or tag..."
+          placeholder="Enter username or @tag..."
           className="bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
         <p className="text-xs text-zinc-500 mt-1">
           Search by username or @tag
@@ -109,41 +133,58 @@ const PrivateConversationView = () => {
       </div>
 
       <div className="space-y-2">
-        <h4 className="text-sm font-medium text-zinc-400">Suggested Users</h4>
-        {suggestedUsers.map((user, index) => (
-          <div
-            key={index}
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-zinc-800 cursor-pointer transition-colors"
-          >
-            <div className="relative">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={user.avatar || "/placeholder.svg"} />
-                <AvatarFallback className="bg-zinc-700 text-zinc-300">
-                  {user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              {user.online && (
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-900"></div>
-              )}
-            </div>
-            <div className="flex-1">
-              <p className="text-white font-medium">{user.name}</p>
-              <p className="text-sm text-zinc-400">{user.username}</p>
-            </div>
-            <Button
-              size="sm"
-              className="bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
-              onClick={() => post('/conversations/private', {
-                'recipient_tag': 'm3ss1'
-              })}
+        <h4 className="text-sm font-medium text-zinc-400">
+          {searchQuery ? "Search Results" : ""}
+        </h4>
+
+        {isSearching && (
+          <p className="text-zinc-400 text-center py-4">Searching...</p>
+        )}
+
+        {!isSearching && searchQuery && searchResults.length === 0 && (
+          <p className="text-zinc-400 text-center py-4">No users found.</p>
+        )}
+
+        {!isSearching && !searchQuery && (
+            <p className="text-zinc-500 text-center py-4">Start typing to find a user.</p>
+        )}
+
+        {!isSearching &&
+          searchResults.map((user) => (
+            <div
+              key={user.id}
+              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-zinc-800 cursor-pointer transition-colors"
+              onClick={() => handleCreateConversation(user.id, false)}
             >
-              Chat
-            </Button>
-          </div>
-        ))}
+              <div className="relative">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user.avatar ?? undefined} />
+                  <AvatarFallback className="bg-zinc-700 text-zinc-300">
+                    {user.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Online status can be added here if the API provides it */}
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-medium">{user.name}</p>
+                <p className="text-sm text-zinc-400">@{user.tag}</p>
+              </div>
+              {/* <Button
+                size="sm"
+                className="bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
+                disabled={isCreating}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent the div's onClick from firing
+                  handleCreateConversation(user.id, true);
+                }}
+              >
+                Chat
+              </Button> */}
+            </div>
+          ))}
       </div>
     </div>
   );

@@ -4,10 +4,12 @@ import type { AxiosError } from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import echo from "@/lib/echo";
+import { mutate } from "swr";
 import {
   startNavigationProgress,
   stopNavigationProgress,
 } from "@/lib/nprogress";
+import { useChatStore } from "@/stores/chat.store";
 
 type AuthContextType = {
   user: User | null;
@@ -70,6 +72,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (credentials: { email: string; password: string }) => {
     startNavigationProgress();
     try {
+      // Clear store and cache
+      useChatStore.getState().reset();
+      await mutate(() => true, undefined, { revalidate: false });
+
       const response = await api.post("/login", credentials);
       setUser(response.data.user);
       const redirectTo = location.state?.from?.pathname || "/";
@@ -107,8 +113,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     startNavigationProgress();
     try {
+      // Clear store and cache
+      useChatStore.getState().reset();
+      mutate(() => true, undefined, { revalidate: false });
+
       await api.post("/logout");
       setUser(null);
+
       navigate("/login", { state: { from: location }, replace: true });
     } catch (err) {
       console.error("Logout failed:", err);
