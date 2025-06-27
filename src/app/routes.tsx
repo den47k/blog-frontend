@@ -5,7 +5,7 @@ import Register from "@/pages/auth/Register";
 import VerifyEmailNotice from "@/pages/auth/VerifyEmailNotice";
 import ProtectedRoute from "@/components/features/ProtectedRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { startNavigationProgress, stopNavigationProgress } from "@/lib/nprogress";
+import { startLoading, stopLoading } from "@/lib/nprogress";
 import { useEffect } from "react";
 import { AppLayout } from "@/components/layouts/AppLayout";
 
@@ -14,9 +14,9 @@ const NavigationProgress = () => {
   
   useEffect(() => {
     if (navigation.state === "loading") {
-      startNavigationProgress();
+      startLoading();
     } else {
-      stopNavigationProgress();
+      stopLoading();
     }
   }, [navigation.state]);
 

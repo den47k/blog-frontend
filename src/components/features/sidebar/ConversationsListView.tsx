@@ -3,11 +3,8 @@ import { useConversationIds } from "@/stores/chat.store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConversationItem } from "./ConversationItem";
 
-
 export const ConversationListView = ({ loading }: { loading: boolean }) => {
   const conversationIds = useConversationIds();
-
-  console.log(conversationIds);
 
   if (loading) {
     return (
@@ -20,9 +17,9 @@ export const ConversationListView = ({ loading }: { loading: boolean }) => {
   }
 
   return (
-    <ScrollArea className="flex-1 border-t border-zinc-800">
+    <ScrollArea className="h-full">
       <div className="p-2">
-        {conversationIds.map(id => (
+        {conversationIds.map((id) => (
           <ConversationItem key={id} id={id} />
         ))}
       </div>

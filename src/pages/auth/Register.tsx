@@ -33,7 +33,7 @@ const registerSchema = z
       .max(32, "Username must be less than 20 characters"),
     tag: z
       .string()
-      .min(5, "Tag must be at least 3 characters")
+      .min(5, "Tag must be at least 5 characters")
       .max(32, "Tag must be less than 20 characters"),
     email: z.string().email("Invalid email address"),
     password: z

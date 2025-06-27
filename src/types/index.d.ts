@@ -2,9 +2,9 @@ export type User = {
   id: string;
   name: string;
   tag: string;
-  avatar: string;
   email: string;
-  email_verified_at: string | null;
+  avatar: string;
+  isEmailVerified: boolean | null;
 };
 
 export type Conversation = {

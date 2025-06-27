@@ -9,8 +9,6 @@ export const ConversationItem = ({ id }: { id: string }) => {
 
   if (!conversation) return;
 
-  console.log(conversation);
-
   return (
     <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-zinc-800 cursor-pointer transition-colors">
       <div className="relative flex-shrink-0">

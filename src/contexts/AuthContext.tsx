@@ -6,8 +6,8 @@ import { useLocation, useNavigate } from "react-router";
 import echo from "@/lib/echo";
 import { mutate } from "swr";
 import {
-  startNavigationProgress,
-  stopNavigationProgress,
+  startLoading,
+  stopLoading,
 } from "@/lib/nprogress";
 import { useChatStore } from "@/stores/chat.store";
 
@@ -36,10 +36,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log(user);
+
   const fetchUser = async () => {
     try {
       const response = await api.get("/user");
-      setUser(response.data);
+      setUser(response.data.data);
     } catch (error) {
       setUser(null);
     } finally {
@@ -56,11 +58,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (user && !user.email_verified_at) {
+    if (user && !user.isEmailVerified) {
       const channel = echo.private(`user.${user.id}`);
 
       channel.listen(".EmailVerified", (e: any) => {
-        setUser({ ...user, email_verified_at: e.user.email_verified_at });
+        setUser({ ...user, isEmailVerified: !!e.user?.email_verified_at });
       });
 
       return () => {
@@ -70,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   const login = async (credentials: { email: string; password: string }) => {
-    startNavigationProgress();
+    startLoading();
     try {
       // Clear store and cache
       useChatStore.getState().reset();
@@ -84,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const error = err as AxiosError<{ message?: string }>;
       throw new Error(error.response?.data?.message || "Login failed");
     } finally {
-      stopNavigationProgress();
+      stopLoading();
     }
   };
 
@@ -94,7 +96,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string;
     password_confirmation: string;
   }) => {
-    startNavigationProgress();
+    startLoading();
     try {
       const response = await api.post("/register", userData);
       setUser(response.data.user);
@@ -106,12 +108,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         : ["Registration failed"];
       throw new Error(errorMessages.join(", "));
     } finally {
-      stopNavigationProgress();
+      stopLoading();
     }
   };
 
   const logout = async () => {
-    startNavigationProgress();
+    startLoading();
     try {
       // Clear store and cache
       useChatStore.getState().reset();
@@ -124,23 +126,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err) {
       console.error("Logout failed:", err);
     } finally {
-      stopNavigationProgress();
+      stopLoading();
     }
   };
 
   const resendVerification = async () => {
-    startNavigationProgress();
+    startLoading();
     try {
       await api.post("/email/resend", { email: user?.email });
     } catch (err) {
       throw new Error("Failed to resend verification email");
     } finally {
-      stopNavigationProgress();
+      stopLoading();
     }
   };
 
   const isAuthenticated = !!user;
-  const isVerified = !!user?.email_verified_at;
+  const isVerified = !!user?.isEmailVerified;
 
   const value = {
     user,

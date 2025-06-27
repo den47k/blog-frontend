@@ -8,14 +8,14 @@ NProgress.configure({
 
 let navigationCount = 0;
 
-export const startNavigationProgress = () => {
+export const startLoading = () => {
   if (navigationCount === 0) {
     NProgress.start();
   }
   navigationCount++;
 };
 
-export const stopNavigationProgress = () => {
+export const stopLoading = () => {
   navigationCount--;
   if (navigationCount <= 0) {
     navigationCount = 0;
@@ -23,7 +23,7 @@ export const stopNavigationProgress = () => {
   }
 };
 
-export const resetNavigationProgress = () => {
+export const resetLoading = () => {
   navigationCount = 0;
   NProgress.done();
 };
