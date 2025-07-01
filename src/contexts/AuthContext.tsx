@@ -2,7 +2,7 @@ import api from "@/lib/api";
 import type { User } from "@/types";
 import type { AxiosError } from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, redirect } from "react-router";
 import echo from "@/lib/echo";
 import { mutate } from "swr";
 import {
@@ -33,23 +33,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
   const location = useLocation();
 
-  console.log(user);
-
-  const fetchUser = async () => {
-    try {
-      const response = await api.get("/user");
-      setUser(response.data.data);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchUser = async () => {
+      startLoading(); 
+      try {
+        const response = await api.get("/user");
+        setUser(response.data.data);
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+        stopLoading();
+      }
+    };
+
     fetchUser();
 
     return () => {
@@ -81,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const response = await api.post("/login", credentials);
       setUser(response.data.user);
       const redirectTo = location.state?.from?.pathname || "/";
-      navigate(redirectTo, { replace: true });
+      redirect(redirectTo);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       throw new Error(error.response?.data?.message || "Login failed");
@@ -93,6 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const register = async (userData: {
     name: string;
     email: string;
+    tag: string;
     password: string;
     password_confirmation: string;
   }) => {
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const response = await api.post("/register", userData);
       setUser(response.data.user);
-      navigate("/email-verification-notice", { replace: true });
+      redirect("/email-verification-notice");
     } catch (err) {
       const error = err as AxiosError<{ errors?: Record<string, string[]> }>;
       const errorMessages = error.response?.data?.errors
@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await api.post("/logout");
       setUser(null);
 
-      navigate("/login", { state: { from: location }, replace: true });
+      redirect("/login");
     } catch (err) {
       console.error("Logout failed:", err);
     } finally {

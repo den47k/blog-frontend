@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import type { Conversation } from "@/types";
+import type { Conversation, Message } from "@/types";
 
 export interface ChatState {
   conversations: Record<string, Conversation>;
@@ -11,6 +11,7 @@ export interface ChatActions {
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
   upsertConversation: (conversation: Conversation) => void;
+  updateConversationOnNewMessage: (message: Message) => void;
   reset: () => void;
 }
 
@@ -65,6 +66,24 @@ export const useChatStore = create<ChatState & ChatActions>()(
         }
       }),
 
+    updateConversationOnNewMessage: (message) =>
+      set((state) => {
+        const convoId = message.conversationId;
+        const conversation = state.conversations[convoId];
+
+        if (conversation) {
+          conversation.lastMessage = message.content;
+          conversation.updatedAt = message.createdAt;
+
+          // ToDo: increment unread count
+
+          state.conversationOrder = [
+            convoId,
+            ...state.conversationOrder.filter((id) => id !== convoId)
+          ]
+        }
+      }),
+
     reset: () =>
       set(() => ({
         conversations: {},
@@ -76,5 +95,12 @@ export const useChatStore = create<ChatState & ChatActions>()(
 export const useConversationIds = () => 
   useChatStore(state => state.conversationOrder);
 
-export const useConversation = (id: string) => 
-  useChatStore(state => state.conversations[id]);
+export const useConversation = (identifier: string) => 
+  useChatStore((state) => {
+    const byId = state.conversations[identifier];
+    if (byId) return byId;
+
+    return Object.values(state.conversations).find(
+      (conversation) => conversation.userTag === identifier
+    );
+  });

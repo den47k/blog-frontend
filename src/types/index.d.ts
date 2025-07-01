@@ -9,6 +9,7 @@ export type User = {
 
 export type Conversation = {
   id: string;
+  userTag: string | null;
   title: string;
   description?: string;
   lastMessage: string;
@@ -20,3 +21,17 @@ export type Conversation = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type Message = {
+  id: string;
+  content: string;
+  senderId: string;
+  conversationId: string;
+  createdAt: string;
+  sender: {
+    id: string;
+    name: string;
+    tag: string;
+    avatar: string;
+  }
+}

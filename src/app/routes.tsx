@@ -1,36 +1,17 @@
-import { createBrowserRouter, Navigate, Outlet, useNavigation } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import WorkInProgress from "@/pages/WorkInProgress";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import VerifyEmailNotice from "@/pages/auth/VerifyEmailNotice";
 import ProtectedRoute from "@/components/features/ProtectedRoute";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { startLoading, stopLoading } from "@/lib/nprogress";
-import { useEffect } from "react";
 import { AppLayout } from "@/components/layouts/AppLayout";
+import { RootLayout } from "@/components/layouts/RootLayout";
+import ChatMain from "@/pages/Chat";
 
-const NavigationProgress = () => {
-  const navigation = useNavigation();
-  
-  useEffect(() => {
-    if (navigation.state === "loading") {
-      startLoading();
-    } else {
-      stopLoading();
-    }
-  }, [navigation.state]);
-
-  return null;
-};
 
 export const router = createBrowserRouter([
   {
-    element: (
-      <AuthProvider>
-        <NavigationProgress />
-        <Outlet />
-      </AuthProvider>
-    ),
+    Component: RootLayout,
     children: [
       {
         path: "/login",
@@ -70,7 +51,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ":userTag",
-            element: <WorkInProgress />
+            element: <ChatMain />
           },
         ]
       },
