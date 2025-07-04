@@ -3,6 +3,7 @@ import axios, {
   type InternalAxiosRequestConfig,
   type AxiosInstance,
 } from "axios";
+import echo from "./echo";
 
 // API instance initialization
 const api: AxiosInstance = axios.create({
@@ -45,9 +46,15 @@ export const resetCsrfToken = (): Promise<void> => {
 // Request interceptor
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const method = config.method?.toUpperCase();
+
   if (method && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
     await ensureCsrfToken();
   }
+
+  if (echo.socketId()) {
+    config.headers['X-Socket-ID'] = echo.socketId();
+  }
+
   return config;
 });
 

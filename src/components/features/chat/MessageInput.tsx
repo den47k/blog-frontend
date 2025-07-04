@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useSendMessage } from "@/hooks/useChatApi";
 import { PaperclipIcon, SendIcon, SmileIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface MessageInputProps {
   conversationId: string;
@@ -10,6 +10,7 @@ interface MessageInputProps {
 
 export const MessageInput = ({ conversationId }: MessageInputProps) => {
   const [content, setContent] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
   const { sendMessage, isSending } = useSendMessage(conversationId);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,9 +26,16 @@ export const MessageInput = ({ conversationId }: MessageInputProps) => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      formRef.current?.requestSubmit();
+    }
+  }
+
   return (
     <div className="bg-zinc-900 border-t border-zinc-800 p-4">
-      <form onSubmit={handleSubmit} className="flex items-end space-x-2">
+      <form ref={formRef} onSubmit={handleSubmit} className="flex items-end space-x-2">
         <Button
           type="button"
           variant="ghost"
@@ -43,6 +51,7 @@ export const MessageInput = ({ conversationId }: MessageInputProps) => {
             className="min-h-[40px] max-h-[132px] bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 resize-none"
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
             disabled={isSending}
           />
         </div>

@@ -5,8 +5,8 @@ import { useConversation } from "@/stores/chat.store";
 import { useParams } from "react-router";
 
 export default function ChatMain() {
-  const { userTag } = useParams<{ userTag: string }>();
-  const conversation = userTag ? useConversation(userTag) : undefined;
+  const { identifier } = useParams<{ identifier: string }>();
+  const conversation = identifier ? useConversation(identifier) : undefined;
   const conversationId = conversation?.id;
 
   if (!conversationId) return null;

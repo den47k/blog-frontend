@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
             element: <WorkInProgress />
           },
           {
-            path: ":userTag",
+            path: ":identifier",
             element: <ChatMain />
           },
         ]
