@@ -41,8 +41,6 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
 
     const channel = echo.private(`conversation.${conversationId}`);
 
-    console.log(channel);
-
     const handleNewMessage = (newMessage: Message) => {
       updateConversationOnNewMessage(newMessage);
 

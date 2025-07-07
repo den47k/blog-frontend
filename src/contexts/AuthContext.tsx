@@ -79,8 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const response = await api.post("/login", credentials);
       setUser(response.data.user);
-      const redirectTo = location.state?.from?.pathname || "/";
-      redirect(redirectTo);
+      redirect(location.state?.from?.pathname || "/");
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       throw new Error(error.response?.data?.message || "Login failed");

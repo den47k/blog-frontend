@@ -18,18 +18,18 @@ export const ConversationListView = ({ loading }: { loading: boolean }) => {
 
   return (
     <ScrollArea className="h-full">
-      {/* <div className="p-2">
+      <div className="p-2">
         {conversationIds.map((id) => (
           <ConversationItem key={id} id={id} />
         ))}
-      </div> */}
-      <div className="p-2">
+      </div>
+      {/* <div className="p-2">
         {conversationIds.map((id) =>
           Array.from({ length: 15 }).map((_, i) => (
             <ConversationItem key={`${id}-${i}`} id={id} />
           ))
         )}
-      </div>
+      </div> */}
     </ScrollArea>
   );
 };

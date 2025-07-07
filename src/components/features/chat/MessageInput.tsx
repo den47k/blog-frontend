@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useSendMessage } from "@/hooks/useChatApi";
 import { PaperclipIcon, SendIcon, SmileIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface MessageInputProps {
   conversationId: string;
@@ -11,6 +11,7 @@ interface MessageInputProps {
 export const MessageInput = ({ conversationId }: MessageInputProps) => {
   const [content, setContent] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const { sendMessage, isSending } = useSendMessage(conversationId);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,8 +22,10 @@ export const MessageInput = ({ conversationId }: MessageInputProps) => {
       const tempContent = content;
       setContent("");
       await sendMessage({ content: tempContent });
+      textAreaRef.current?.focus();
     } catch {
       setContent(content);
+      textAreaRef.current?.focus();
     }
   };
 
@@ -32,6 +35,10 @@ export const MessageInput = ({ conversationId }: MessageInputProps) => {
       formRef.current?.requestSubmit();
     }
   }
+
+  useEffect(() => {
+    textAreaRef.current?.focus();
+  }, []);
 
   return (
     <div className="bg-zinc-900 border-t border-zinc-800 p-4">
@@ -47,6 +54,7 @@ export const MessageInput = ({ conversationId }: MessageInputProps) => {
 
         <div className="flex-1">
           <Textarea
+          ref={textAreaRef}
             placeholder="Type a message..."
             className="min-h-[40px] max-h-[132px] bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 resize-none"
             value={content}

@@ -3,19 +3,25 @@ import { MessageInput } from "@/components/features/chat/MessageInput";
 import { MessageList } from "@/components/features/chat/MessageList";
 import { useConversation } from "@/stores/chat.store";
 import { useParams } from "react-router";
+import { useConversation as useFetchConversation } from "@/hooks/useChatApi";
 
 export default function ChatMain() {
   const { identifier } = useParams<{ identifier: string }>();
-  const conversation = identifier ? useConversation(identifier) : undefined;
-  const conversationId = conversation?.id;
+  if (!identifier) return null;
 
-  if (!conversationId) return null;
+  const conversationFromStore = useConversation(identifier);
+  const { conversation: fetchedConversation } = useFetchConversation(
+    conversationFromStore ? null : identifier
+  );
+
+  const conversation = conversationFromStore || fetchedConversation;
+  if (!conversation) return null;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <ChatHeader conversation={conversation} />
       <MessageList conversationId={conversation.id} />
-      <MessageInput conversationId={conversationId} />
+      <MessageInput conversationId={conversation.id} />
     </div>
   );
 }

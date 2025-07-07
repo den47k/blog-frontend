@@ -5,6 +5,7 @@ import useApi from "@/hooks/useApi";
 import type { User } from "@/types";
 import { ArrowLeftIcon, AtSign, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 interface AddConversationViewProps {
   onBackClick: () => void;
@@ -71,7 +72,8 @@ export const AddConversationView = ({
 };
 
 const PrivateConversationView = () => {
-  const { get, post, loading: isCreating } = useApi();
+  const navigate = useNavigate();
+  const { get, post } = useApi();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -102,14 +104,16 @@ const PrivateConversationView = () => {
   }, [searchQuery, get]);
 
   const handleCreateConversation = async (
-    userId: string,
+    user: User,
     shouldJoinNow: boolean
   ) => {
     try {
       await post("/conversations/private", {
-        user_id: userId,
+        user_id: user.id,
         should_join_now: shouldJoinNow,
       });
+
+      navigate(`/${user.tag}`);
     } catch (error) {
       console.error("Failed to create conversation:", error);
     }
@@ -154,7 +158,7 @@ const PrivateConversationView = () => {
             <div
               key={user.id}
               className="flex items-center space-x-3 p-3 rounded-lg hover:bg-zinc-800 cursor-pointer transition-colors"
-              onClick={() => handleCreateConversation(user.id, false)}
+              onClick={() => handleCreateConversation(user, false)}
             >
               <div className="relative">
                 <Avatar className="h-10 w-10">
@@ -172,17 +176,6 @@ const PrivateConversationView = () => {
                 <p className="text-white font-medium">{user.name}</p>
                 <p className="text-sm text-zinc-400">@{user.tag}</p>
               </div>
-              {/* <Button
-                size="sm"
-                className="bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
-                disabled={isCreating}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent the div's onClick from firing
-                  handleCreateConversation(user.id, true);
-                }}
-              >
-                Chat
-              </Button> */}
             </div>
           ))}
       </div>

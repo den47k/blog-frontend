@@ -45,10 +45,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          {
-            index: true,
-            element: <WorkInProgress />
-          },
+          { index: true, element: <WorkInProgress /> },
           {
             path: ":identifier",
             element: <ChatMain />

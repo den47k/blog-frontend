@@ -1,4 +1,4 @@
-import useSWR, { useSWRConfig } from "swr";
+import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
 import useSWRMutation from "swr/mutation";
 import api from "@/lib/api";
@@ -38,6 +38,22 @@ const getMessagesKey = (
 };
 
 // --- QUERIES ---
+export const useConversation = (id: string | null) => {
+  const { data, error, isLoading } = useSWR<Conversation>(
+    id ? `/conversations/private/${id}` : null,
+    (url: string) => api.get(url).then((res) => res.data.data),
+    {
+      ...swrConfig
+    }
+  );
+
+  return {
+    conversation: data,
+    error,
+    isLoading
+  }
+}
+
 export const useConversations = () => {
   const { user } = useAuth();
   const { setConversations } = useChatStore();
@@ -100,50 +116,14 @@ export const useMessages = (conversationId: string | null) => {
 // --- MUTATIONS ---
 
 // fetchers
-const createPrivateConversationFetcher = async (
-  url: string,
-  { arg }: { arg: { userId: number } }
-): Promise<Conversation> => {
-  return api
-    .post(url, { user_id: arg.userId })
-    .then((res) => res.data.conversation);
-};
-
-const sendMessageFetcher = async (
+ const sendMessageFetcher = async (
   url: string,
   { arg }: { arg: { content: string } }
-): Promise<Message> => {
+): Promise<{ message: Message, conversation: Conversation }> => {
   return api.post(url, { content: arg.content }).then((res) => res.data.data);
 };
 
 // hooks
-export const useCreatePrivateConversation = () => {
-  const { mutate } = useSWRConfig();
-  const { addConversation } = useChatStore();
-
-  const { trigger, isMutating } = useSWRMutation(
-    "/conversations/private",
-    createPrivateConversationFetcher,
-    {
-      ...swrConfig,
-      onSuccess: (newConvo) => {
-        addConversation(newConvo);
-        mutate(
-          "/conversations",
-          (conversations: Conversation[] = []) => [newConvo, ...conversations],
-          false
-        );
-      },
-      throwOnError: false,
-    }
-  );
-
-  return {
-    createConversation: trigger,
-    isCreating: isMutating,
-  };
-};
-
 export const useSendMessage = (conversationId: string | null) => {
   const { user } = useAuth();
   const { mutateMessages } = useMessages(conversationId);
@@ -155,14 +135,19 @@ export const useSendMessage = (conversationId: string | null) => {
     conversationId ? `/conversations/${conversationId}/messages` : null,
     sendMessageFetcher,
     {
-      onSuccess: (newMessage: Message) => {
-        updateConversationOnNewMessage(newMessage);
+      onSuccess: (data: { message: Message, conversation: Conversation }) => {
+        const { message, conversation } = data;
+
+        const exists = useChatStore.getState().conversations[conversation.id];
+        if (!exists) useChatStore.getState().addConversation(conversation);
+
+        updateConversationOnNewMessage(message);
 
         mutateMessages(
           (currentPages: PaginatedMessages[] | undefined) => {
             if (!currentPages || currentPages.length === 0) {
               const newPage: PaginatedMessages = {
-                data: [newMessage],
+                data: [message],
                 links: { first: null, last: null, prev: null, next: null },
                 meta: { current_page: 1, last_page: 1, per_page: 30, total: 1 },
               };
@@ -171,7 +156,7 @@ export const useSendMessage = (conversationId: string | null) => {
 
             const newPages = JSON.parse(JSON.stringify(currentPages));
 
-            newPages[0].data.unshift(newMessage);
+            newPages[0].data.unshift(message);
 
             return newPages;
           },
