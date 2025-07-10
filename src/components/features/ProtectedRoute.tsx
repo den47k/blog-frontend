@@ -17,10 +17,10 @@ const ProtectedRoute = ({
   preventIfVerified = false,
   redirectPath = "/login"
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, isVerified, isLoading } = useAuth();
+  const { isAuthenticated, isVerified } = useAuth();
   const location = useLocation();
 
-  if (isLoading) return null;
+  // if (isLoading) return null;
 
   // Block verified users from accessing this route (e.g. verification notice)
   if (preventIfVerified && isVerified) {

@@ -10,7 +10,7 @@ export interface ChatState {
 export interface ChatActions {
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
-  upsertConversation: (conversation: Conversation) => void;
+  // upsertConversation: (conversation: Conversation) => void;
   updateConversationOnNewMessage: (message: Message) => void;
   reset: () => void;
 }
@@ -51,20 +51,20 @@ export const useChatStore = create<ChatState & ChatActions>()(
         state.conversationOrder.unshift(conversation.id);
       }),
 
-    upsertConversation: (conversation) =>
-      set((state) => {
-        const exists = state.conversations[conversation.id];
-        state.conversations[conversation.id] = conversation;
+    // upsertConversation: (conversation) =>
+    //   set((state) => {
+    //     const exists = state.conversations[conversation.id];
+    //     state.conversations[conversation.id] = conversation;
 
-        if (!exists) {
-          state.conversationOrder.unshift(conversation.id);
-        } else {
-          state.conversationOrder = [
-            conversation.id,
-            ...state.conversationOrder.filter((id) => id !== conversation.id),
-          ];
-        }
-      }),
+    //     if (!exists) {
+    //       state.conversationOrder.unshift(conversation.id);
+    //     } else {
+    //       state.conversationOrder = [
+    //         conversation.id,
+    //         ...state.conversationOrder.filter((id) => id !== conversation.id),
+    //       ];
+    //     }
+    //   }),
 
     updateConversationOnNewMessage: (message) =>
       set((state) => {

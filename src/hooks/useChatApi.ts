@@ -65,6 +65,7 @@ export const useConversations = () => {
       ...swrConfig,
       onSuccess: (data) => data && setConversations(data),
       revalidateOnMount: true,
+      revalidateIfStale: true,
     }
   );
 

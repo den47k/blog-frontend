@@ -2,20 +2,16 @@ import api from "@/lib/api";
 import type { User } from "@/types";
 import type { AxiosError } from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useLocation, redirect } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import echo from "@/lib/echo";
 import { mutate } from "swr";
-import {
-  startLoading,
-  stopLoading,
-} from "@/lib/nprogress";
 import { useChatStore } from "@/stores/chat.store";
+import { startLoading, stopLoading } from "@/lib/nprogress";
 
 type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
   isVerified: boolean;
-  isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   register: (userData: {
     name: string;
@@ -32,8 +28,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // debugger;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -44,7 +43,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } catch (error) {
         setUser(null);
       } finally {
-        setIsLoading(false);
         stopLoading();
       }
     };
@@ -79,7 +77,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const response = await api.post("/login", credentials);
       setUser(response.data.user);
-      redirect(location.state?.from?.pathname || "/");
+
+      mutate(
+        key => Array.isArray(key) && key[0] === "/conversations",
+        undefined,
+        { revalidate: true }
+      );
+
+      navigate(location.state?.from?.pathname || "/", { replace: true });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       throw new Error(error.response?.data?.message || "Login failed");
@@ -99,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const response = await api.post("/register", userData);
       setUser(response.data.user);
-      redirect("/email-verification-notice");
+      navigate("/email-verification-notice", { replace: true });
     } catch (err) {
       const error = err as AxiosError<{ errors?: Record<string, string[]> }>;
       const errorMessages = error.response?.data?.errors
@@ -117,11 +122,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Clear store and cache
       useChatStore.getState().reset();
       mutate(() => true, undefined, { revalidate: false });
+      // mutate(key => true, undefined, { revalidate: false });
 
       await api.post("/logout");
       setUser(null);
 
-      redirect("/login");
+      navigate("/login", { replace: true });
     } catch (err) {
       console.error("Logout failed:", err);
     } finally {
@@ -147,7 +153,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     isAuthenticated,
     isVerified,
-    isLoading,
     login,
     register,
     logout,

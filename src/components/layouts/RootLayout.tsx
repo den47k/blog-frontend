@@ -14,7 +14,7 @@ export const RootLayout = () => {
 
 const NavigationProgress = () => {
   const navigation = useNavigation();
-	const isNavigating = Boolean(navigation.location);
+  const isNavigating = Boolean(navigation.location);
 
   useEffect(() => {
     if (isNavigating) {
