@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MailIcon, LogOutIcon } from "lucide-react";
-import { AuthLayout } from "@/components/layouts/AuthLayout";
+import ProtectedRoute from "@/components/features/ProtectedRoute";
 
 const VerifyEmailNotice = () => {
   const { user, logout, resendVerification } = useAuth();
@@ -29,7 +29,7 @@ const VerifyEmailNotice = () => {
   };
 
   return (
-    <AuthLayout description="Email verification required">
+    <ProtectedRoute requireAuth={true} requireVerified={false} preventIfVerified={true}>
       <Card className="bg-zinc-900 shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl text-white flex items-center justify-center space-x-2">
@@ -88,7 +88,7 @@ const VerifyEmailNotice = () => {
           </div>
         </CardContent>
       </Card>
-    </AuthLayout>
+    </ProtectedRoute>
   );
 };
 

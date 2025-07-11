@@ -7,6 +7,7 @@ import echo from "@/lib/echo";
 import { mutate } from "swr";
 import { useChatStore } from "@/stores/chat.store";
 import { startLoading, stopLoading } from "@/lib/nprogress";
+import { withProgress } from "@/hooks/useNavigationProgress";
 
 type AuthContextType = {
   user: User | null;
@@ -32,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // debugger;
+  debugger;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -68,8 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user]);
 
-  const login = async (credentials: { email: string; password: string }) => {
-    startLoading();
+  const login = withProgress(async (credentials: { email: string; password: string }) => {
     try {
       // Clear store and cache
       useChatStore.getState().reset();
@@ -88,19 +88,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       throw new Error(error.response?.data?.message || "Login failed");
-    } finally {
-      stopLoading();
     }
-  };
+  });
 
-  const register = async (userData: {
+  const register = withProgress(async (userData: {
     name: string;
     email: string;
     tag: string;
     password: string;
     password_confirmation: string;
   }) => {
-    startLoading();
     try {
       const response = await api.post("/register", userData);
       setUser(response.data.user);
@@ -111,40 +108,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         ? Object.values(error.response.data.errors).flat()
         : ["Registration failed"];
       throw new Error(errorMessages.join(", "));
-    } finally {
-      stopLoading();
     }
-  };
+  });
 
-  const logout = async () => {
-    startLoading();
+  const logout = withProgress(async () => {
     try {
       // Clear store and cache
       useChatStore.getState().reset();
       mutate(() => true, undefined, { revalidate: false });
       // mutate(key => true, undefined, { revalidate: false });
 
-      await api.post("/logout");
       setUser(null);
+      await api.post("/logout");
 
       navigate("/login", { replace: true });
     } catch (err) {
       console.error("Logout failed:", err);
-    } finally {
-      stopLoading();
     }
-  };
+  });
 
-  const resendVerification = async () => {
-    startLoading();
+  const resendVerification = withProgress(async () => {
     try {
       await api.post("/email/resend", { email: user?.email });
     } catch (err) {
       throw new Error("Failed to resend verification email");
-    } finally {
-      stopLoading();
     }
-  };
+  });
 
   const isAuthenticated = !!user;
   const isVerified = !!user?.isEmailVerified;

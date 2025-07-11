@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AuthLayout } from "@/components/layouts/AuthLayout";
+import ProtectedRoute from "@/components/features/ProtectedRoute";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address").min(1, "Email is required"),
@@ -32,7 +32,6 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
 
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -48,14 +47,13 @@ const Login = () => {
     setServerError("");
     try {
       await login(data);
-      navigate(from, { replace: true });
     } catch (err: any) {
       setServerError(err.message || "Login failed. Please try again.");
     }
   };
 
   return (
-    <AuthLayout description="Connect with friends in the shadows">
+    <ProtectedRoute requireAuth={false}>
       <Card className="bg-zinc-900 shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl text-white">Sign In</CardTitle>
@@ -187,7 +185,7 @@ const Login = () => {
           </div>
         </CardFooter>
       </Card>
-    </AuthLayout>
+    </ProtectedRoute>
   );
 };
 

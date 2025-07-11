@@ -1,4 +1,5 @@
 import { type PropsWithChildren } from "react";
+import { Outlet } from "react-router";
 
 interface AuthLayoutProps {
   title?: string;
@@ -6,7 +7,6 @@ interface AuthLayoutProps {
 }
 
 export const AuthLayout = ({
-  children,
   title = "DarkChat",
   description,
 }: PropsWithChildren<AuthLayoutProps>) => {
@@ -17,7 +17,7 @@ export const AuthLayout = ({
           <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
           <p className="text-zinc-400">{description}</p>
         </div>
-        {children}
+        <Outlet />
       </div>
     </div>
   );

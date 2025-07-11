@@ -23,7 +23,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router";
 import { z } from "zod";
-import { AuthLayout } from "@/components/layouts/AuthLayout";
+import ProtectedRoute from "@/components/features/ProtectedRoute";
 
 const registerSchema = z
   .object({
@@ -75,8 +75,6 @@ const Register = () => {
         password: data.password,
         password_confirmation: data.passwordConfirmation,
       });
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
     } catch (err: any) {
       if (err.response?.data?.errors) {
         const errors = err.response.data.errors;
@@ -96,7 +94,7 @@ const Register = () => {
   };
 
   return (
-    <AuthLayout description="Create your account">
+    <ProtectedRoute requireAuth={false}>
       <Card className="bg-zinc-900 shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl text-white">Sign Up</CardTitle>
@@ -273,7 +271,7 @@ const Register = () => {
           </div>
         </CardFooter>
       </Card>
-    </AuthLayout>
+    </ProtectedRoute>
   );
 };
 

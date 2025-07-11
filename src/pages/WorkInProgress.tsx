@@ -34,7 +34,7 @@ export default function WorkInProgress() {
           : JSON.stringify(response)}
       </pre>
 
-      <button className="text-white" onClick={async () => await logout()}>Logout</button>
+      <button className="text-white" onClick={() => logout()}>Logout</button>
     </div>
   );
 }
