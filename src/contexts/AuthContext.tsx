@@ -6,13 +6,13 @@ import { useLocation, useNavigate } from "react-router";
 import echo from "@/lib/echo";
 import { mutate } from "swr";
 import { useChatStore } from "@/stores/chat.store";
-import { startLoading, stopLoading } from "@/lib/nprogress";
 import { withProgress } from "@/hooks/useNavigationProgress";
 
 type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
   isVerified: boolean;
+  loading: boolean,
   login: (credentials: { email: string; password: string }) => Promise<void>;
   register: (userData: {
     name: string;
@@ -29,20 +29,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
-      startLoading(); 
       try {
         const response = await api.get("/user");
         setUser(response.data.data);
       } catch (error) {
         setUser(null);
       } finally {
-        stopLoading();
+        setLoading(false);
       }
     };
 
@@ -140,6 +140,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     isAuthenticated,
     isVerified,
+    loading,
     login,
     register,
     logout,
