@@ -33,8 +33,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  debugger;
-
   useEffect(() => {
     const fetchUser = async () => {
       startLoading(); 

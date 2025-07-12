@@ -4,6 +4,7 @@ import { MessageList } from "@/components/features/chat/MessageList";
 import { useConversation } from "@/stores/chat.store";
 import { useParams } from "react-router";
 import { useConversation as useFetchConversation } from "@/hooks/useChatApi";
+import ProtectedRoute from "@/components/features/ProtectedRoute";
 
 export default function ChatMain() {
   const { identifier } = useParams<{ identifier: string }>();
@@ -18,10 +19,12 @@ export default function ChatMain() {
   if (!conversation) return null;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <ChatHeader conversation={conversation} />
-      <MessageList conversationId={conversation.id} />
-      <MessageInput conversationId={conversation.id} />
-    </div>
+    <ProtectedRoute requireAuth={true} requireVerified={true}>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <ChatHeader conversation={conversation} />
+        <MessageList conversationId={conversation.id} />
+        <MessageInput conversationId={conversation.id} />
+      </div>
+    </ProtectedRoute>
   );
 }

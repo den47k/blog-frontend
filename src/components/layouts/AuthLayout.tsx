@@ -1,4 +1,3 @@
-import { type PropsWithChildren } from "react";
 import { Outlet } from "react-router";
 
 interface AuthLayoutProps {
@@ -9,7 +8,7 @@ interface AuthLayoutProps {
 export const AuthLayout = ({
   title = "DarkChat",
   description,
-}: PropsWithChildren<AuthLayoutProps>) => {
+}: AuthLayoutProps) => {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-zinc-950 p-4">
       <div className="w-full max-w-md">

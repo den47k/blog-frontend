@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useApi from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/features/ProtectedRoute";
 
 export default function WorkInProgress() {
   const { logout } = useAuth();
@@ -22,19 +23,21 @@ export default function WorkInProgress() {
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center text-center">
-      <h1 className="text-4xl font-bold text-white mb-2">Work in Progress</h1>
+    <ProtectedRoute requireAuth={true} requireVerified={true}>
+      <div className="flex-1 flex flex-col items-center justify-center text-center">
+        <h1 className="text-4xl font-bold text-white mb-2">Work in Progress</h1>
 
-      <h2 className="text-3xl text-white font-mono mb-4 mt-12">API Response Test</h2>
-      <pre className="text-white">
-        {loading
-          ? "Loading..."
-          : typeof response === "string"
-          ? response
-          : JSON.stringify(response)}
-      </pre>
+        <h2 className="text-3xl text-white font-mono mb-4 mt-12">API Response Test</h2>
+        <pre className="text-white">
+          {loading
+            ? "Loading..."
+            : typeof response === "string"
+            ? response
+            : JSON.stringify(response)}
+        </pre>
 
-      <button className="text-white" onClick={() => logout()}>Logout</button>
-    </div>
+        <button className="text-white" onClick={() => logout()}>Logout</button>
+      </div>
+    </ProtectedRoute>
   );
 }
