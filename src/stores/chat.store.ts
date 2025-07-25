@@ -92,6 +92,9 @@ export const useChatStore = create<ChatState & ChatActions>()(
   }))
 );
 
+export const useConversations = () =>
+  useChatStore(state => state.conversations);
+
 export const useConversationIds = () => 
   useChatStore(state => state.conversationOrder);
 

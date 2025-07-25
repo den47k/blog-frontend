@@ -13,11 +13,12 @@ export type Conversation = {
   title: string;
   description?: string;
   lastMessage: string;
-  timestamp: string;
+  lastMessageTimestamp: string;
   unread: number; // make 0 by default
   avatar: string;
-  online: boolean | null; // make null by default
-  isGroup?: boolean;
+  type: string;
+  participants: User[];
+  lastSeenAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -27,6 +28,7 @@ export type Message = {
   content: string;
   senderId: string;
   conversationId: string;
+  status: "sent" | "read";
   createdAt: string;
   sender: {
     id: string;

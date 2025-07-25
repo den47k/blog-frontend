@@ -20,7 +20,7 @@ const ProtectedRoute = ({
   const { loading, isAuthenticated, isVerified } = useAuth();
   const location = useLocation();
 
-  if (loading) return null;
+  if (loading) return null; // ToDo add loading user's data view
 
   // Block verified users from accessing this route (e.g. verification notice)
   if (preventIfVerified && isVerified) {

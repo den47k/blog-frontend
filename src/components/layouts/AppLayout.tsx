@@ -1,4 +1,3 @@
-// import ProtectedRoute from "../features/ProtectedRoute";
 import { AppSidebar } from "../features/sidebar/AppSidebar";
 import { Outlet } from "react-router";
 

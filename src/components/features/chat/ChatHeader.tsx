@@ -8,9 +8,8 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader = ({ conversation }: ChatHeaderProps) => {
-	const title = conversation.title;
-  const avatar = conversation.avatar;
-  // const status = conversation.online ? "Online" : "Offline";
+  // const { user: currentUser } = useAuth();
+  // const otherUser = conversation.type === 'private' ? conversation.participants.find((p) => p.id !== currentUser?.id) : null;
 
   return (
     <div className="bg-zinc-900 border-b border-zinc-800 p-4">
@@ -18,14 +17,25 @@ export const ChatHeader = ({ conversation }: ChatHeaderProps) => {
         <div className="flex items-center space-x-3">
           <div className="relative">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={avatar || "/placeholder.svg"} />
-							<AvatarFallback className="bg-zinc-700 text-zinc-300">{title.substring(0, 2)}</AvatarFallback>
+              <AvatarImage src={conversation.avatar || "/placeholder.svg"} />
+              <AvatarFallback className="bg-zinc-700 text-zinc-300">
+                {conversation.title.substring(0, 2)}
+              </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-900"></div>
+            {/* {true && (<div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-900"></div>)} */}
           </div>
           <div>
-            <h2 className="text-white font-semibold">{title}</h2>
-            <p className="text-sm text-green-400">Online</p>
+            <h2 className="text-white font-semibold">{conversation.title}</h2>
+
+            {conversation.type === "private" && (
+              <div className="text-xs text-muted-foreground">
+                {/* {true ? (
+                  <p className="text-green-400">Online</p>
+                ) : conversation.lastSeenAt ? (
+                  `Last seen ${formatTimestamp(conversation.lastSeenAt)} ago`
+                ) : null} */}
+              </div>
+            )}
           </div>
         </div>
 
