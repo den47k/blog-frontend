@@ -20,12 +20,49 @@ export const MessageItem = memo(({ message }: MessageItemProps) => {
           <AvatarFallback className="bg-zinc-700 text-zinc-300 text-xs">{message.sender.name.substring(0, 2)}</AvatarFallback>
         </Avatar>
       )}
-      <div className="max-w-xs lg:max-w-md min-w-[100px]">
-        <div className={`rounded-2xl px-4 py-2 ${isOwn ? "bg-rose-600 text-white" : "bg-zinc-800 text-zinc-200"}`}>
-          <p className="text-sm">{message.content}</p>
+
+      {/* <div className="max-w-xs lg:max-w-md min-w-[100px]">
+        <div
+          className={`rounded-2xl px-4 py-2 ${
+            isOwn 
+              ? "bg-rose-600 text-white rounded-tr-none" 
+              : "bg-zinc-800 text-zinc-200 rounded-tl-none"
+          }`}
+        >
+
+          <p className="text-sm whitespace-break-spaces break-words pb-5">
+            {message.content}
+          </p>
+          
+          <div className="flex justify-end -mt-5 h-5">
+            <span className={`text-xs ${isOwn ? "text-rose-200" : "text-zinc-500"}`}>
+              {formatTimestamp(message.createdAt)}
+            </span>
+          </div>
         </div>
-        <div className={`flex items-center gap-1 mt-1 pl-1 ${isOwn ? "justify-between" : "justify-start"}`}>
-          <p className={"text-xs text-zinc-500 mt-1"}>{formatTimestamp(message.createdAt)}</p>
+      </div> */}
+
+      <div className="max-w-xs lg:max-w-md min-w-[100px]">
+        <div
+          className={`rounded-2xl px-4 py-2 ${
+            isOwn 
+              ? "bg-rose-600 text-white rounded-br-none" 
+              : "bg-zinc-800 text-zinc-200 rounded-bl-none"
+          }`}
+        >
+          <div className="flex justify-between items-end gap-3">
+            <p className="text-sm whitespace-pre-wrap break-words">
+              {message.content}
+            </p>
+            <span 
+              className={`flex-shrink-0 text-xs ${
+                isOwn ? "text-rose-200" : "text-zinc-500"
+              }`}
+              style={{minWidth: "fit-content"}}
+            >
+              {formatTimestamp(message.createdAt)}
+            </span>
+          </div>
         </div>
       </div>
     </div>

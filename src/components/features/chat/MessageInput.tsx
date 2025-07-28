@@ -34,15 +34,29 @@ export const MessageInput = ({ conversationId }: MessageInputProps) => {
       e.preventDefault();
       formRef.current?.requestSubmit();
     }
-  }
+  };
 
   useEffect(() => {
     textAreaRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = "auto";
+      textAreaRef.current.style.height = `${Math.min(
+        textAreaRef.current.scrollHeight,
+        132
+      )}px`;
+    }
+  }, [content]);
+
   return (
     <div className="bg-zinc-900 border-t border-zinc-800 p-4">
-      <form ref={formRef} onSubmit={handleSubmit} className="flex items-end space-x-2">
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        className="flex items-end space-x-2"
+      >
         <Button
           type="button"
           variant="ghost"
@@ -54,13 +68,14 @@ export const MessageInput = ({ conversationId }: MessageInputProps) => {
 
         <div className="flex-1">
           <Textarea
-          ref={textAreaRef}
+            ref={textAreaRef}
             placeholder="Type a message..."
             className="min-h-[40px] max-h-[132px] bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 resize-none"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isSending}
+            rows={1}
           />
         </div>
 

@@ -9,10 +9,8 @@ import {
 } from "@/hooks/useChatApi";
 import ProtectedRoute from "@/components/features/ProtectedRoute";
 import { useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function ChatMain() {
-  const { user } = useAuth();
   const { identifier } = useParams<{ identifier: string }>();
 
   const conversationFromStore = useConversation(identifier ?? "");
@@ -23,7 +21,8 @@ export default function ChatMain() {
   const { markAsRead } = useMarkAsRead(conversation?.id ?? null);
 
   useEffect(() => {
-    if (conversation?.hasUnread && conversation.userTag === user?.tag) {
+    if (conversation?.hasUnread) {
+      console.log(123);
       markAsRead();
     }
   }, [conversation?.id, conversation?.hasUnread, markAsRead]);
