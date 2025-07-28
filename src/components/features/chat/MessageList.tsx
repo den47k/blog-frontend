@@ -5,14 +5,18 @@ import { useMessages } from "@/hooks/useChatApi";
 import { useChatStore } from "@/stores/chat.store";
 import echo from "@/lib/echo";
 import type { Message, PaginatedMessages } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MessageListProps {
   conversationId: string | null;
 }
 
 export const MessageList = memo(({ conversationId }: MessageListProps) => {
+  const { user } = useAuth();
   const { messages, isLoading, error, hasMore, loadMore, mutateMessages } = useMessages(conversationId);
+
   const updateConversationOnNewMessage = useChatStore(state => state.updateConversationOnNewMessage);
+  const setActiveConversation = useChatStore(state => state.setActiveConversation);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const topSentinelRef = useRef<HTMLDivElement>(null);
@@ -37,12 +41,22 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
   }, []);
 
   useEffect(() => {
-    if (!conversationId) return;
+    if (conversationId) {
+      setActiveConversation(conversationId);
+    }
+    
+    return () => {
+      setActiveConversation(null);
+    };
+  }, [conversationId, setActiveConversation]);
+
+  useEffect(() => {
+    if (!conversationId || !user) return;
 
     const channel = echo.private(`conversation.${conversationId}`);
 
     const handleNewMessage = (newMessage: Message) => {
-      updateConversationOnNewMessage(newMessage);
+      updateConversationOnNewMessage(newMessage, user.id);
 
       if (newMessage.conversationId === conversationId) {
         mutateMessages((currentPages: PaginatedMessages[] | undefined) => {

@@ -14,7 +14,7 @@ export type Conversation = {
   description?: string;
   lastMessage: string;
   lastMessageTimestamp: string;
-  unread: number; // make 0 by default
+  hasUnread: boolean;
   avatar: string;
   type: string;
   participants: User[];
@@ -28,14 +28,13 @@ export type Message = {
   content: string;
   senderId: string;
   conversationId: string;
-  status: "sent" | "read";
   createdAt: string;
   sender: {
     id: string;
     name: string;
     tag: string;
     avatar: string;
-  }
+  };
 };
 
 export interface Paginated<T> {
@@ -52,6 +51,6 @@ export interface Paginated<T> {
     per_page: number;
     total: number;
   };
-};
+}
 
 export type PaginatedMessages = Paginated<Message>;

@@ -5,13 +5,15 @@ import type { Conversation, Message } from "@/types";
 export interface ChatState {
   conversations: Record<string, Conversation>;
   conversationOrder: string[];
+  activeConversationId: string | null;
 }
 
 export interface ChatActions {
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
-  // upsertConversation: (conversation: Conversation) => void;
-  updateConversationOnNewMessage: (message: Message) => void;
+  updateConversationOnNewMessage: (message: Message, currentUserId?: string) => void;
+  markConversationAsRead: (ConversationId: string) => void;
+  setActiveConversation: (conversationId: string | null) => void;
   reset: () => void;
 }
 
@@ -20,6 +22,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
     // Initial state
     conversations: {},
     conversationOrder: [],
+    activeConversationId: null,
 
     // Actions
     setConversations: (conversations) =>
@@ -28,8 +31,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
         const sortedIds = conversations
           .sort(
             (a, b) =>
-              new Date(b.updatedAt).getTime() -
-              new Date(a.updatedAt).getTime()
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           )
           .map((convo) => convo.id);
 
@@ -51,36 +53,39 @@ export const useChatStore = create<ChatState & ChatActions>()(
         state.conversationOrder.unshift(conversation.id);
       }),
 
-    // upsertConversation: (conversation) =>
-    //   set((state) => {
-    //     const exists = state.conversations[conversation.id];
-    //     state.conversations[conversation.id] = conversation;
-
-    //     if (!exists) {
-    //       state.conversationOrder.unshift(conversation.id);
-    //     } else {
-    //       state.conversationOrder = [
-    //         conversation.id,
-    //         ...state.conversationOrder.filter((id) => id !== conversation.id),
-    //       ];
-    //     }
-    //   }),
-
-    updateConversationOnNewMessage: (message) =>
+    updateConversationOnNewMessage: (message, currentUserId) =>
       set((state) => {
         const convoId = message.conversationId;
         const conversation = state.conversations[convoId];
+        if (!conversation) return;
 
+        conversation.lastMessage = message.content;
+        conversation.updatedAt = message.createdAt;
+        
+        const isCurrentUserMessage = message.senderId === currentUserId;
+        const isActiveConversation = state.activeConversationId === convoId;
+
+        conversation.hasUnread = !isCurrentUserMessage && !isActiveConversation;
+
+        state.conversationOrder = [
+          convoId,
+          ...state.conversationOrder.filter((id) => id !== convoId),
+        ];
+      }),
+
+    markConversationAsRead: (conversationId: string) =>
+      set((state) => {
+        const conversation = state.conversations[conversationId];
         if (conversation) {
-          conversation.lastMessage = message.content;
-          conversation.updatedAt = message.createdAt;
-
-          // ToDo: increment unread count
-
-          state.conversationOrder = [
-            convoId,
-            ...state.conversationOrder.filter((id) => id !== convoId)
-          ]
+          conversation.hasUnread = false;
+        }
+      }),
+    setActiveConversation: (conversationId) =>
+      set((state) => {
+        state.activeConversationId = conversationId;
+        // Mark as read when opened
+        if (conversationId && state.conversations[conversationId]) {
+          state.conversations[conversationId].hasUnread = false;
         }
       }),
 
@@ -93,12 +98,12 @@ export const useChatStore = create<ChatState & ChatActions>()(
 );
 
 export const useConversations = () =>
-  useChatStore(state => state.conversations);
+  useChatStore((state) => state.conversations);
 
-export const useConversationIds = () => 
-  useChatStore(state => state.conversationOrder);
+export const useConversationIds = () =>
+  useChatStore((state) => state.conversationOrder);
 
-export const useConversation = (identifier: string) => 
+export const useConversation = (identifier: string) =>
   useChatStore((state) => {
     const byId = state.conversations[identifier];
     if (byId) return byId;

@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatTimestamp } from "@/lib/utils";
 import type { Message } from "@/types";
-import { Check, CheckCheck } from "lucide-react";
 import { memo } from "react";
 
 interface MessageItemProps {
@@ -26,22 +25,9 @@ export const MessageItem = memo(({ message }: MessageItemProps) => {
           <p className="text-sm">{message.content}</p>
         </div>
         <div className={`flex items-center gap-1 mt-1 pl-1 ${isOwn ? "justify-between" : "justify-start"}`}>
-          <p className={`text-xs text-zinc-500 mt-1 ${isOwn ? "text-right" : "text-left"}`}>{formatTimestamp(message.createdAt)}</p>
-          {isOwn && <StatusIndicator status={message.status} />}
+          <p className={"text-xs text-zinc-500 mt-1"}>{formatTimestamp(message.createdAt)}</p>
         </div>
       </div>
     </div>
   );
 });
-
-
-const StatusIndicator = ({ status }: { status: Message["status"] }) => {
-  switch (status) {
-    case "sent":
-      return <Check className="h-3 w-3 text-zinc-400" />
-    case "read":
-      return <CheckCheck className="h-4 w-4 text-rose-400" />
-    default:
-      return null
-  }
-};

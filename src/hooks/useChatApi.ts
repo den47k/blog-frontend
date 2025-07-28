@@ -17,7 +17,7 @@ const swrConfig = {
 const getMessagesKey = (
   pageIndex: number,
   previousPageData: PaginatedMessages | null,
-  conversationId: string
+  conversationId: string,
 ) => {
   if (previousPageData && !previousPageData.links.next) {
     return null;
@@ -30,7 +30,7 @@ const getMessagesKey = (
   if (previousPageData?.links.next) {
     const url = new URL(previousPageData.links.next);
     return `/conversations/${conversationId}/messages?page=${url.searchParams.get(
-      "page"
+      "page",
     )}`;
   }
 
@@ -43,16 +43,16 @@ export const useConversation = (id: string | null) => {
     id ? `/conversations/private/${id}` : null,
     (url: string) => api.get(url).then((res) => res.data.data),
     {
-      ...swrConfig
-    }
+      ...swrConfig,
+    },
   );
 
   return {
     conversation: data,
     error,
-    isLoading
-  }
-}
+    isLoading,
+  };
+};
 
 export const useConversations = () => {
   const { user } = useAuth();
@@ -66,7 +66,7 @@ export const useConversations = () => {
       onSuccess: (data) => data && setConversations(data),
       revalidateOnMount: true,
       revalidateIfStale: true,
-    }
+    },
   );
 
   return {
@@ -80,7 +80,8 @@ export const useConversations = () => {
 export const useMessages = (conversationId: string | null) => {
   const { user } = useAuth();
 
-  const { data, error, isLoading, size, setSize, mutate } = useSWRInfinite<PaginatedMessages>(
+  const { data, error, isLoading, size, setSize, mutate } =
+    useSWRInfinite<PaginatedMessages>(
       (pageIndex, previousPageData) =>
         user && conversationId
           ? getMessagesKey(pageIndex, previousPageData, conversationId)
@@ -89,8 +90,8 @@ export const useMessages = (conversationId: string | null) => {
       {
         revalidateFirstPage: false,
         revalidateAll: false,
-        revalidateOnFocus: false
-      }
+        revalidateOnFocus: false,
+      },
     );
 
   const messages: Message[] = data ? data.flatMap((page) => page.data) : [];
@@ -117,10 +118,10 @@ export const useMessages = (conversationId: string | null) => {
 // --- MUTATIONS ---
 
 // fetchers
- const sendMessageFetcher = async (
+const sendMessageFetcher = async (
   url: string,
-  { arg }: { arg: { content: string } }
-): Promise<{ message: Message, conversation: Conversation }> => {
+  { arg }: { arg: { content: string } },
+): Promise<{ message: Message; conversation: Conversation }> => {
   return api.post(url, { content: arg.content }).then((res) => res.data.data);
 };
 
@@ -129,14 +130,14 @@ export const useSendMessage = (conversationId: string | null) => {
   const { user } = useAuth();
   const { mutateMessages } = useMessages(conversationId);
   const updateConversationOnNewMessage = useChatStore(
-    (state) => state.updateConversationOnNewMessage
+    (state) => state.updateConversationOnNewMessage,
   );
 
   const { trigger, isMutating } = useSWRMutation(
     conversationId ? `/conversations/${conversationId}/messages` : null,
     sendMessageFetcher,
     {
-      onSuccess: (data: { message: Message, conversation: Conversation }) => {
+      onSuccess: (data: { message: Message; conversation: Conversation }) => {
         const { message, conversation } = data;
 
         const exists = useChatStore.getState().conversations[conversation.id];
@@ -161,21 +162,44 @@ export const useSendMessage = (conversationId: string | null) => {
 
             return newPages;
           },
-          { revalidate: false }
+          { revalidate: false },
         );
       },
       revalidate: false,
       throwOnError: false,
-    }
+    },
   );
 
-  const sendMessage = useCallback(async (arg: { content: string }) => {
-    if (!conversationId || !user) return;
-    await trigger(arg);
-  }, [conversationId, user, trigger]);
+  const sendMessage = useCallback(
+    async (arg: { content: string }) => {
+      if (!conversationId || !user) return;
+      await trigger(arg);
+    },
+    [conversationId, user, trigger],
+  );
 
   return {
     sendMessage,
     isSending: isMutating,
+  };
+};
+
+export const useMarkAsRead = (conversationId: string | null) => {
+  const { trigger, isMutating } = useSWRMutation(
+    conversationId ? `/conversations/${conversationId}/mark-as-read` : null,
+    (url: string) => api.post(url),
+    {
+      onSuccess: () => {
+        if (conversationId) {
+          useChatStore.getState().markConversationAsRead(conversationId);
+        }
+      },
+      revalidate: false,
+    }
+  );
+
+  return {
+    markAsRead: trigger,
+    isMarking: isMutating,
   };
 };

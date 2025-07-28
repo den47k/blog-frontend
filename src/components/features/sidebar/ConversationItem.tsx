@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { useConversation } from "@/stores/chat.store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageCircle } from "lucide-react";
@@ -16,7 +15,12 @@ export const ConversationItem = ({ id }: { id: string }) => {
 
   return (
     <Link to={`/${routeIdentifier}`} className="block">
-      <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-zinc-800 cursor-pointer transition-colors">
+      <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-zinc-800 cursor-pointer transition-colors relative">
+
+        {conversation?.hasUnread && (
+          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1.5 h-1.5 bg-rose-500 rounded-full"></div>
+        )}
+
         <div className="relative flex-shrink-0">
           <Avatar className="h-12 w-12">
             <AvatarImage src={conversation.avatar || "/placeholder.svg"} />
@@ -38,18 +42,17 @@ export const ConversationItem = ({ id }: { id: string }) => {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1 gap-2">
-            <h3 className="text-white font-medium truncate">
-              {conversation.title}
-            </h3>
+            <h3 className={`font-medium truncate ${
+                conversation?.hasUnread 
+                  ? "text-white font-semibold" 
+                  : "text-zinc-300"
+              }`}>
+                {conversation?.title}
+              </h3>
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="text-xs text-zinc-500">
                 {formatTimestamp(conversation.lastMessageTimestamp)}
               </span>
-              {conversation.unread > 0 && (
-                <Badge className="bg-rose-600 hover:bg-rose-600 text-white text-xs px-2 py-0.5 min-w-[1.5rem] justify-center">
-                  {conversation.unread > 9 ? "9+" : conversation.unread}
-                </Badge>
-              )}
             </div>
           </div>
           <p className="text-sm text-zinc-400 truncate pr-2">
