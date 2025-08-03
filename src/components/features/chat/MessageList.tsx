@@ -189,7 +189,7 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
           .slice()
           .reverse()
           .map((message) => (
-            <MessageItem key={message.id} message={message} />
+            <MessageItem key={message.id} message={message} onEdit={() => {}} onDelete={() => {}} onReply={() => {}}/>
           ))}
       </div>
     </ScrollArea>

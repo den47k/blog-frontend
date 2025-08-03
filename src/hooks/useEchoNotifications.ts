@@ -1,7 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import echo from "@/lib/echo";
 import { useChatStore } from "@/stores/chat.store";
-import type { Message } from "@/types";
+// import type { Message } from "@/types";
 import { useEffect } from "react";
 
 export const useEchoNotifications = () => {
@@ -10,15 +10,15 @@ export const useEchoNotifications = () => {
 
   useEffect(() => {
     if (user) {
-      const channel = echo.private(`App.Models.User.${user.id}`);
+      const channel = echo.private(`user.${user.id}`);
 
-      channel.notification((newMessage: Message) => {
-				console.log(newMessage);
-				updateConversationOnNewMessage(newMessage, user.id);
+      channel.listen(".NewMessageReceived", (e: any) => {
+				updateConversationOnNewMessage(e.message, user.id);
 			});
 
       return () => {
         channel.unsubscribe();
+        channel.stopListening(".NewMessageReceived");
       };
     }
   }, [user, updateConversationOnNewMessage]);
