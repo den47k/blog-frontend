@@ -9,41 +9,52 @@ import { useAuth } from "@/contexts/AuthContext";
 import { formatTimestamp } from "@/lib/utils";
 import type { Message } from "@/types";
 import { Copy, Edit3, Reply, Trash2 } from "lucide-react";
-import { memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 // ToDo implement onEdit and OnDelete
 interface MessageItemProps {
   message: Message;
+  isEditing?: boolean;
   onEdit?: (message: Message) => void;
+  onSaveEdit?: (messageId: string, content: string) => void;
+  onCancelEdit?: () => void;
   onDelete?: (message: Message) => void;
   onReply?: (message: Message) => void;
 }
 
 export const MessageItem = memo(
-  ({ message, onEdit, onDelete, onReply }: MessageItemProps) => {
+  ({ message, isEditing = false, onEdit, onSaveEdit, onCancelEdit, onDelete, onReply }: MessageItemProps) => {
     const { user } = useAuth();
     const isOwn = message.senderId === user?.id;
+
+    const [editContent, setEditContent] = useState(message.content);
+    const editRef = useRef<HTMLTextAreaElement>(null);
 
     const handleCopyMessage = () => {
       navigator.clipboard.writeText(message.content);
     };
 
+    useEffect(() => {
+      if (isEditing && editRef.current) {
+        editRef.current.focus();
+        editRef.current.select();
+      }
+    }, [isEditing]);
+
     const messageBubbleContent = (
       <div
-        className={`max-w-xs lg:max-w-md min-w-[100px] rounded-2xl px-4 py-2 transition-all duration-200 cursor-pointer ${
-          isOwn
-            ? "bg-rose-600 text-white rounded-br-none hover:bg-rose-700"
-            : "bg-zinc-800 text-zinc-200 rounded-bl-none hover:bg-zinc-700"
-        }`}
+        className={`max-w-xs lg:max-w-md min-w-[100px] rounded-2xl px-4 py-2 transition-all duration-200 cursor-pointer ${isOwn
+          ? "bg-rose-600 text-white rounded-br-none hover:bg-rose-700"
+          : "bg-zinc-800 text-zinc-200 rounded-bl-none hover:bg-zinc-700"
+          }`}
       >
         <div className="flex justify-between items-end gap-3">
           <p className="text-sm whitespace-pre-wrap break-words">
             {message.content}
           </p>
           <span
-            className={`flex-shrink-0 text-xs ${
-              isOwn ? "text-rose-200" : "text-zinc-500"
-            }`}
+            className={`flex-shrink-0 text-xs ${isOwn ? "text-rose-200" : "text-zinc-500"
+              }`}
             style={{ minWidth: "fit-content" }}
           >
             {formatTimestamp(message.createdAt)}
@@ -51,6 +62,36 @@ export const MessageItem = memo(
         </div>
       </div>
     );
+
+    if (isEditing) {
+      return (
+        <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-4`}>
+          <div className="bg-zinc-800 rounded-2xl p-3 w-full max-w-md">
+            <textarea
+              ref={editRef}
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full bg-transparent text-white resize-none focus:outline-none"
+              rows={Math.min(editContent.split('\n').length, 6)}
+            />
+            <div className="flex justify-end gap-2 mt-2">
+              <button
+                onClick={onCancelEdit}
+                className="px-3 py-1 text-sm text-zinc-400 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => onSaveEdit?.(message.id, editContent)}
+                className="px-3 py-1 text-sm bg-rose-600 text-white rounded hover:bg-rose-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div

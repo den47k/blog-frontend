@@ -1,11 +1,12 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageItem } from "./MessageItem";
-import { memo, useCallback, useRef, useLayoutEffect, useEffect } from "react";
-import { useMessages } from "@/hooks/useChatApi";
+import { memo, useCallback, useRef, useLayoutEffect, useEffect, useState } from "react";
 import { useChatStore } from "@/stores/chat.store";
 import echo from "@/lib/echo";
-import type { Message, PaginatedMessages } from "@/types";
+import type { PaginatedMessages, MessageEventData, Message } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMessages } from "@/hooks/chat/useMessages";
+import { useDeleteMessage, useUpdateMessage } from "@/hooks/chat/useMessageActions";
 
 interface MessageListProps {
   conversationId: string | null;
@@ -14,6 +15,10 @@ interface MessageListProps {
 export const MessageList = memo(({ conversationId }: MessageListProps) => {
   const { user } = useAuth();
   const { messages, isLoading, error, hasMore, loadMore, mutateMessages } = useMessages(conversationId);
+
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const { updateMessage } = useUpdateMessage(conversationId);
+  const { deleteMessage } = useDeleteMessage(conversationId);
 
   const updateConversationOnNewMessage = useChatStore(state => state.updateConversationOnNewMessage);
   const setActiveConversation = useChatStore(state => state.setActiveConversation);
@@ -26,6 +31,19 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
   const isInitialLoadRef = useRef(true);
   const isPrependingRef = useRef(false);
   const throttleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleEdit = (message: Message) => {
+    setEditingMessageId(message.id);
+  }
+
+  const handleSaveEdit = async (messageId: string, content: string) => {
+    await updateMessage({ messageId, content });
+    setEditingMessageId(null);
+  };
+
+  const handleDelete = (message: Message) => {
+    deleteMessage({ messageId: message.id });
+  };
 
   const scrollToBottom = useCallback((smooth = false) => {
     const viewport = scrollAreaRef.current?.querySelector(
@@ -44,7 +62,7 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
     if (conversationId) {
       setActiveConversation(conversationId);
     }
-    
+
     return () => {
       setActiveConversation(null);
     };
@@ -55,39 +73,69 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
 
     const channel = echo.private(`conversation.${conversationId}`);
 
-    const handleNewMessage = (newMessage: Message) => {
-      updateConversationOnNewMessage(newMessage, user.id);
+    const handleNewMessage = (event: MessageEventData) => {
+      const { operation, message } = event;
 
-      if (newMessage.conversationId === conversationId) {
-        mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
-          if (!currentPages || currentPages.length === 0) {
-            const newPage: PaginatedMessages = {
-              data: [newMessage],
-              links: { first: null, last: null, prev: null, next: null },
-              meta: { current_page: 1, last_page: 1, per_page: 30, total: 1 },
-            };
-            return [newPage];
+      switch (operation) {
+        case 'create':
+          updateConversationOnNewMessage(message, user.id);
+
+          if (message.conversationId === conversationId) {
+            mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+              if (!currentPages || currentPages.length === 0) {
+                const newPage: PaginatedMessages = {
+                  data: [message],
+                  links: { first: null, last: null, prev: null, next: null },
+                  meta: { current_page: 1, last_page: 1, per_page: 30, total: 1 },
+                };
+                return [newPage];
+              }
+
+              if (currentPages[0].data.some(m => m.id === message.id)) {
+                return currentPages;
+              }
+
+              const updatedPages = [...currentPages];
+              updatedPages[0] = {
+                ...updatedPages[0],
+                data: [message, ...updatedPages[0].data],
+              };
+
+              return updatedPages;
+            }, false);
           }
+          break;
 
-          if (currentPages[0].data.some(m => m.id === newMessage.id)) {
-            return currentPages;
+        case 'update':
+          if (message.conversationId === conversationId) {
+            mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+              if (!currentPages) return currentPages;
+              return currentPages.map(page => ({
+                ...page,
+                data: page.data.map(m =>
+                  m.id === message.id ? { ...m, ...message } : m
+                ),
+              }));
+            }, false);
           }
+          break;
 
-          const updatedPages = [...currentPages];
-          updatedPages[0] = {
-            ...updatedPages[0],
-            data: [newMessage, ...updatedPages[0].data],
-          };
-
-          return updatedPages;
-        }, false);
+        case 'delete':
+          mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+            if (!currentPages) return currentPages;
+            return currentPages.map(page => ({
+              ...page,
+              data: page.data.filter(m => m.id !== event.deletedId), // Fixed: use event.deletedId
+            }));
+          }, false);
+          break;
       }
     };
 
-    channel.listen('.MessageSent', handleNewMessage)
+    channel.listen('.MessageEvent', handleNewMessage)
 
     return () => {
-      channel.stopListening(".MessageSent");
+      channel.stopListening(".MessageEvent");
       echo.leave(`conversation.${conversationId}`);
     }
   }, [conversationId, mutateMessages, updateConversationOnNewMessage]);
@@ -96,7 +144,7 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
     const viewport = scrollAreaRef.current?.querySelector(
       "[data-radix-scroll-area-viewport]"
     ) as HTMLElement | null;
-    
+
     if (!viewport) return;
 
     const observer = new IntersectionObserver(
@@ -125,7 +173,7 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
       {
         root: viewport,
         rootMargin: "300px 0px 0px 0px",
-        threshold: 0.1 
+        threshold: 0.1
       }
     );
 
@@ -189,7 +237,16 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
           .slice()
           .reverse()
           .map((message) => (
-            <MessageItem key={message.id} message={message} onEdit={() => {}} onDelete={() => {}} onReply={() => {}}/>
+            <MessageItem
+              key={message.id}
+              message={message}
+              isEditing={editingMessageId === message.id}
+              onEdit={handleEdit}
+              onSaveEdit={handleSaveEdit}
+              onCancelEdit={() => setEditingMessageId(null)}
+              onDelete={() => handleDelete(message)}
+              onReply={() => { }}
+            />
           ))}
       </div>
     </ScrollArea>

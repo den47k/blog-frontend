@@ -2,7 +2,7 @@ import { useState } from "react";
 import { SidebarHeader } from "./SidebarHeader";
 import { ConversationListView } from "./ConversationsListView";
 import { AddConversationView } from "./AddConversationView";
-import { useConversations } from "@/hooks/useChatApi";
+import { useConversations } from "@/hooks/chat/useConversations";
 
 export const AppSidebar = () => {
   const [currentView, setCurrentView] = useState<"conversations" | "add-chat">(

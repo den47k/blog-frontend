@@ -12,6 +12,13 @@ export interface ChatActions {
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
   updateConversationOnNewMessage: (message: Message, currentUserId?: string) => void;
+  updateConversationOnMessageUpdate: (message: Message) => void;
+  updateConversationOnMessageDelete: (
+    conversationId: string,
+    deletedMessageId: string,
+    wasLastMessage: boolean,
+    newLastMessage: Message | null
+  ) => void;
   markConversationAsRead: (ConversationId: string) => void;
   setActiveConversation: (conversationId: string | null) => void;
   reset: () => void;
@@ -59,9 +66,13 @@ export const useChatStore = create<ChatState & ChatActions>()(
         const conversation = state.conversations[convoId];
         if (!conversation) return;
 
-        conversation.lastMessage = message.content;
-        conversation.updatedAt = message.createdAt;
-        
+        if (!conversation.lastMessage) {
+          conversation.lastMessage = message;
+        } else {
+          conversation.lastMessage.content = message.content;
+          conversation.lastMessage.createdAt = message.createdAt;
+        }
+
         const isCurrentUserMessage = message.senderId === currentUserId;
         const isActiveConversation = state.activeConversationId === convoId;
 
@@ -73,6 +84,35 @@ export const useChatStore = create<ChatState & ChatActions>()(
         ];
       }),
 
+    updateConversationOnMessageUpdate: (message) =>
+      set((state) => {
+        const convo = state.conversations[message.conversationId];
+        if (!convo || !convo.lastMessage) return;
+
+        if (convo.lastMessage.id === message.id) {
+          convo.lastMessage.content = message.content;
+        }
+      }),
+
+    updateConversationOnMessageDelete: (conversationId, deletedMessageId, wasLastMessage, newLastMessage) =>
+      set((state) => {
+        const convo = state.conversations[conversationId];
+        if (!convo) return;
+
+        if (wasLastMessage) {
+          if (newLastMessage) {
+            convo.lastMessage = newLastMessage;
+          } else {
+            convo.lastMessage = null;
+          }
+
+          state.conversationOrder = [
+            conversationId,
+            ...state.conversationOrder.filter(id => id !== conversationId),
+          ];
+        }
+      }),
+
     markConversationAsRead: (conversationId: string) =>
       set((state) => {
         const conversation = state.conversations[conversationId];
@@ -80,6 +120,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
           conversation.hasUnread = false;
         }
       }),
+
     setActiveConversation: (conversationId) =>
       set((state) => {
         state.activeConversationId = conversationId;

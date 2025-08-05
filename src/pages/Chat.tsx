@@ -3,12 +3,10 @@ import { MessageInput } from "@/components/features/chat/MessageInput";
 import { MessageList } from "@/components/features/chat/MessageList";
 import { useConversation } from "@/stores/chat.store";
 import { useParams } from "react-router";
-import {
-  useConversation as useFetchConversation,
-  useMarkAsRead,
-} from "@/hooks/useChatApi";
 import ProtectedRoute from "@/components/features/ProtectedRoute";
 import { useEffect } from "react";
+import { useConversation as useFetchConversation } from "@/hooks/chat/useConversations";
+import { useMarkAsRead } from "@/hooks/chat/useMarkAsRead";
 
 export default function ChatMain() {
   const { identifier } = useParams<{ identifier: string }>();
@@ -22,7 +20,6 @@ export default function ChatMain() {
 
   useEffect(() => {
     if (conversation?.hasUnread) {
-      console.log(123);
       markAsRead();
     }
   }, [conversation?.id, conversation?.hasUnread, markAsRead]);

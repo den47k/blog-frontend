@@ -1,3 +1,4 @@
+// data
 export type User = {
   id: string;
   name: string;
@@ -12,8 +13,9 @@ export type Conversation = {
   userTag: string | null;
   title: string;
   description?: string;
-  lastMessage: string;
-  lastMessageTimestamp: string;
+  // lastMessage: string;
+  // lastMessageTimestamp: string;
+  lastMessage: Message | null;
   hasUnread: boolean;
   avatar: string;
   type: string;
@@ -28,6 +30,7 @@ export type Message = {
   content: string;
   senderId: string;
   conversationId: string;
+  editedAt: string;
   createdAt: string;
   sender: {
     id: string;
@@ -54,3 +57,13 @@ export interface Paginated<T> {
 }
 
 export type PaginatedMessages = Paginated<Message>;
+
+// events
+export interface MessageEventData {
+  operation: 'create' | 'update' | 'delete';
+  message: Message;
+  deletedId: string;
+  conversationId: string;
+  wasLastMessage: boolean;
+  newLastMessage: Message;
+}

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useSendMessage } from "@/hooks/useChatApi";
+import { useSendMessage } from "@/hooks/chat/useMessageActions";
 import { PaperclipIcon, SendIcon, SmileIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

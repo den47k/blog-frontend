@@ -11,6 +11,14 @@ export const ConversationItem = ({ id }: { id: string }) => {
 
   if (!conversation) return;
 
+  const lastMessageContent = conversation.lastMessage
+    ? conversation.lastMessage.content
+    : "No messages yet";
+    
+  const timestamp = conversation.lastMessage
+    ? conversation.lastMessage.createdAt
+    : conversation.createdAt;
+
   // const otherUser = conversation.type === 'private' ? conversation.participants.find((p) => p.id !== currentUser?.id) : null;
 
   return (
@@ -51,12 +59,12 @@ export const ConversationItem = ({ id }: { id: string }) => {
               </h3>
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="text-xs text-zinc-500">
-                {formatTimestamp(conversation.lastMessageTimestamp)}
+                {formatTimestamp(timestamp)}
               </span>
             </div>
           </div>
           <p className="text-sm text-zinc-400 truncate pr-2">
-            {conversation.lastMessage || "No messages yet"}
+            {lastMessageContent}
           </p>
         </div>
       </div>
