@@ -5,9 +5,7 @@ import { AddConversationView } from "./AddConversationView";
 import { useConversations } from "@/hooks/chat/useConversations";
 
 export const AppSidebar = () => {
-  const [currentView, setCurrentView] = useState<"conversations" | "add-chat">(
-    "conversations"
-  );
+  const [currentView, setCurrentView] = useState<"conversations" | "add-chat">("conversations");
 
   const { isLoading } = useConversations();
 
