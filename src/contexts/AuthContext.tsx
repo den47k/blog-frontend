@@ -23,6 +23,7 @@ type AuthContextType = {
   }) => Promise<void>;
   logout: () => Promise<void>;
   resendVerification: () => Promise<void>;
+  updateUser: (user: User | null) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -133,6 +134,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   });
 
+  const updateUser = (userData: User | null) => {
+    setUser(userData);
+  };
+
   const isAuthenticated = !!user;
   const isVerified = !!user?.isEmailVerified;
 
@@ -145,6 +150,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     register,
     logout,
     resendVerification,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

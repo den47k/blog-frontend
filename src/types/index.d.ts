@@ -4,7 +4,11 @@ export type User = {
   name: string;
   tag: string;
   email: string;
-  avatar: string;
+  avatar: {
+    original: string;
+    medium: string;
+    small: string;
+  } | null;
   isEmailVerified: boolean | null;
 };
 

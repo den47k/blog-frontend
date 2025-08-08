@@ -5,29 +5,66 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
 import { LogOut, Menu, SearchIcon, User, UserPlusIcon } from "lucide-react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface SidebarHeaderProps {
   onAddChatClick: () => void;
 }
 
 export const SidebarHeader = ({ onAddChatClick }: SidebarHeaderProps) => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: user?.name || "",
-  });
+  const [profileData, setProfileData] = useState({ name: "" });
+  const [isUploading, setIsUploading] = useState(false);
+
+  console.log(user?.avatar)
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const response = await api.post(`/users/${user.id}/avatar`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      updateUser({
+        ...user,
+        avatar: response.data.avatar
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.name) {
+      setProfileData({ name: user.name });
+    }
+
+    // if (user?.avatar?.small) {
+    //   const response = get(user?.avatar?.small);
+    // }
+  }, [user]);
 
   return (
     <div className="p-4 border-b border-zinc-700">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3 min-w-0 flex-1">
           <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src="/placeholder.svg?height=40&width=40" />
+            <AvatarImage src={user?.avatar?.small || "/placeholder.svg"} />
             <AvatarFallback className="bg-rose-600 text-white">
               {user?.name
                 .split(" ")
+                .filter((n) => n.length > 0)
                 .map((n) => n[0].toUpperCase())
                 .join("")}
             </AvatarFallback>
@@ -108,22 +145,32 @@ export const SidebarHeader = ({ onAddChatClick }: SidebarHeaderProps) => {
           <div className="grid gap-6 py-4">
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src="/placeholder.svg?height=80&width=80" />
+                {/* <AvatarImage src={user?.avatar?.medium || "/placeholder.svg"} /> */}
                 <AvatarFallback className="bg-rose-600 text-white text-xl">
-                  {/* {profileData.name
-                    .split(" ")
-                    .map((n) => n[0].toUpperCase())
-                    .join("")} */}
-                  huy
+                  {profileData.name
+                    ?.split(" ")
+                    .filter((n) => n.length > 0)
+                    .map((n) => n[0]?.toUpperCase() ?? "")
+                    .join("")}
                 </AvatarFallback>
               </Avatar>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 className="bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700"
+                disabled={isUploading}
+                onClick={() => document.getElementById("avatar-upload")?.click()}
               >
-                Change Avatar
+                {isUploading ? "Uploading..." : "Change Avatar"}
               </Button>
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+                disabled={isUploading}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="name" className="text-zinc-200">
@@ -139,17 +186,17 @@ export const SidebarHeader = ({ onAddChatClick }: SidebarHeaderProps) => {
             </div>
           </div>
           <DialogFooter>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               variant="outline"
               onClick={() => setIsProfileOpen(false)}
               className="bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700"
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              onClick={() => {}}
+            <Button
+              type="submit"
+              onClick={() => { }}
               className="bg-rose-600 hover:bg-rose-700 text-white"
             >
               Save changes

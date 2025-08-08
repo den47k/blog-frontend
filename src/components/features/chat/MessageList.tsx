@@ -7,6 +7,7 @@ import type { PaginatedMessages, MessageEventData, Message } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMessages } from "@/hooks/chat/useMessages";
 import { useDeleteMessage, useUpdateMessage } from "@/hooks/chat/useMessageActions";
+import { useMarkAsRead } from "@/hooks/chat/useMarkAsRead";
 
 interface MessageListProps {
   conversationId: string | null;
@@ -15,6 +16,7 @@ interface MessageListProps {
 export const MessageList = memo(({ conversationId }: MessageListProps) => {
   const { user } = useAuth();
   const { messages, isLoading, error, hasMore, loadMore, mutateMessages } = useMessages(conversationId);
+  const { markAsRead } = useMarkAsRead(conversationId);
 
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const { updateMessage } = useUpdateMessage(conversationId);
@@ -79,8 +81,10 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
       switch (operation) {
         case 'create':
           updateConversationOnNewMessage(message, user.id);
+          markAsRead();
 
           if (message.conversationId === conversationId) {
+
             mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
               if (!currentPages || currentPages.length === 0) {
                 const newPage: PaginatedMessages = {
@@ -125,7 +129,7 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
             if (!currentPages) return currentPages;
             return currentPages.map(page => ({
               ...page,
-              data: page.data.filter(m => m.id !== event.deletedId), // Fixed: use event.deletedId
+              data: page.data.filter(m => m.id !== event.deletedId),
             }));
           }, false);
           break;
