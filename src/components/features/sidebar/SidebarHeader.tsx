@@ -19,8 +19,6 @@ export const SidebarHeader = ({ onAddChatClick }: SidebarHeaderProps) => {
   const [profileData, setProfileData] = useState({ name: "" });
   const [isUploading, setIsUploading] = useState(false);
 
-  console.log(user?.avatar)
-
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;

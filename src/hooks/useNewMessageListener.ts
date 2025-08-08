@@ -41,7 +41,7 @@ export const useNewMessageListener = () => {
       channel.listen(".MessageEvent", handleMessageEvent);
 
       return () => {
-        channel.stopListening(".NewMessageReceived");
+        channel.stopListening(".MessageEvent");
         echo.leave(`user.${user.id}`);
       };
     }

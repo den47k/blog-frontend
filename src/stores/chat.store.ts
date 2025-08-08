@@ -62,7 +62,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
 
     updateConversationOnNewMessage: (message, currentUserId) =>
       set((state) => {
-        const convoId = message.conversationId;
+        const convoId = String(message.conversationId);
         const conversation = state.conversations[convoId];
         if (!conversation) return;
 
@@ -86,17 +86,19 @@ export const useChatStore = create<ChatState & ChatActions>()(
 
     updateConversationOnMessageUpdate: (message) =>
       set((state) => {
-        const convo = state.conversations[message.conversationId];
+        const convoId = String(message.conversationId);
+        const convo = state.conversations[convoId];
         if (!convo || !convo.lastMessage) return;
 
-        if (convo.lastMessage.id === message.id) {
+        if (String(convo.lastMessage.id) === String(message.id)) {
           convo.lastMessage.content = message.content;
         }
       }),
 
     updateConversationOnMessageDelete: (conversationId, deletedMessageId, wasLastMessage, newLastMessage) =>
       set((state) => {
-        const convo = state.conversations[conversationId];
+        const convoId = String(conversationId);
+        const convo = state.conversations[convoId];
         if (!convo) return;
 
         if (wasLastMessage) {

@@ -17,8 +17,6 @@ export type Conversation = {
   userTag: string | null;
   title: string;
   description?: string;
-  // lastMessage: string;
-  // lastMessageTimestamp: string;
   lastMessage: Message | null;
   hasUnread: boolean;
   avatar: string;
