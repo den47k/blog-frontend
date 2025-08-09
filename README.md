@@ -3,6 +3,8 @@
 This is the **React 19 + Vite** frontend for the real-time chat application.  
 It communicates with the Laravel backend via a REST API and **Laravel Echo** for real-time events.
 
+**Backend Repository:** [Whisp Backend](https://github.com/den47k/blog-backend)
+
 ---
 
 ## Features
