@@ -55,6 +55,10 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
     config.headers['X-Socket-ID'] = echo.socketId();
   }
 
+  if (config.data instanceof FormData) {
+    config.headers['Content-Type'] = 'multipart/form-data';
+  }
+
   return config;
 });
 
