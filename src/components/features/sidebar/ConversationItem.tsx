@@ -21,6 +21,8 @@ export const ConversationItem = ({ id }: { id: string }) => {
 
   // const otherUser = conversation.type === 'private' ? conversation.participants.find((p) => p.id !== currentUser?.id) : null;
 
+  console.log(conversation.avatar);
+
   return (
     <Link to={`/${routeIdentifier}`} className="block">
       <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-zinc-800 cursor-pointer transition-colors relative">
@@ -31,7 +33,7 @@ export const ConversationItem = ({ id }: { id: string }) => {
 
         <div className="relative flex-shrink-0">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={conversation.avatar || "/placeholder.svg"} />
+            <AvatarImage src={conversation.avatar?.small || "/placeholder.svg"} />
             <AvatarFallback className="bg-zinc-700 text-zinc-300">
               {conversation.type === 'group' ? (
                 <MessageCircle size={20} />

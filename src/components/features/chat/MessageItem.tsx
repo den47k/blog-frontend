@@ -26,6 +26,8 @@ export const MessageItem = memo(
   ({ message, isEditing = false, onEdit, onSaveEdit, onCancelEdit, onDelete, onReply }: MessageItemProps) => {
     const { user } = useAuth();
     const isOwn = message.senderId === user?.id;
+    const hasContent = !!message.content;
+    const hasAttachment = !!message.attachment;
 
     const [editContent, setEditContent] = useState(message.content);
     const editRef = useRef<HTMLTextAreaElement>(null);
@@ -43,23 +45,48 @@ export const MessageItem = memo(
 
     const messageBubbleContent = (
       <div
-        className={`max-w-xs lg:max-w-md min-w-[100px] rounded-2xl px-4 py-2 transition-all duration-200 cursor-pointer ${isOwn
+        className={`max-w-xs lg:max-w-md min-w-[100px] rounded-2xl transition-all duration-200 cursor-pointer ${isOwn
           ? "bg-rose-600 text-white rounded-br-none hover:bg-rose-700"
           : "bg-zinc-800 text-zinc-200 rounded-bl-none hover:bg-zinc-700"
           }`}
       >
-        <div className="flex justify-between items-end gap-3">
-          <p className="text-sm whitespace-pre-wrap break-words">
-            {message.content}
-          </p>
-          <span
-            className={`flex-shrink-0 text-xs ${isOwn ? "text-rose-200" : "text-zinc-500"
-              }`}
-            style={{ minWidth: "fit-content" }}
-          >
-            {formatTimestamp(message.createdAt)}
-          </span>
-        </div>
+
+        {hasAttachment && (
+          <div className="relative">
+            <img
+              src={message.attachment!.urls.original || "/placeholder.svg"}
+              alt="Message attachment"
+              className="w-full max-h-60 object-cover"
+            />
+            {/* Gradient overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+            <div className={`flex px-4 py-2`}>
+              <span
+                className={`flex-shrink-0 text-xs ${isOwn ? "text-rose-200 ml-auto" : "text-zinc-500"}`}
+                style={{ minWidth: "fit-content" }}
+              >
+                {formatTimestamp(message.createdAt)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {(hasContent || !hasAttachment) && ( // Always show timestamp area
+          <div className="flex justify-between items-end gap-3 px-4 py-2">
+            {hasContent && (
+              <p className="text-sm whitespace-pre-wrap break-words">
+                {message.content}
+              </p>
+            )}
+            <span
+              className={`flex-shrink-0 text-xs ${isOwn ? "text-rose-200" : "text-zinc-500"
+                }`}
+              style={{ minWidth: "fit-content" }}
+            >
+              {formatTimestamp(message.createdAt)}
+            </span>
+          </div>
+        )}
       </div>
     );
 

@@ -19,12 +19,32 @@ export type Conversation = {
   description?: string;
   lastMessage: Message | null;
   hasUnread: boolean;
-  avatar: string;
+  avatar: {
+    original: string;
+    medium: string;
+    small: string;
+  } | null;
   type: string;
   participants: User[];
   lastSeenAt: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type MessageAttachment = {
+  id: string;
+  data: {
+    original: string;
+    type: string;
+    size: number;
+    mime_type: string;
+    original_name: string;
+    thumbnail?: string;
+  };
+  urls: {
+    original: string;
+    thumbnail?: string;
+  };
 };
 
 export type Message = {
@@ -40,6 +60,7 @@ export type Message = {
     tag: string;
     avatar: string;
   };
+  attachment: MessageAttachment;
 };
 
 export interface Paginated<T> {

@@ -9,9 +9,16 @@ import { useCallback } from "react";
 // fetchers
 const sendMessageFetcher = async (
   url: string,
-  { arg }: { arg: { content: string } },
+  { arg }: { arg: { content?: string; attachment?: File } },
 ): Promise<{ message: Message; conversation: Conversation }> => {
-  return api.post(url, { content: arg.content }).then((res) => res.data.data);
+  const formData = new FormData();
+
+  if (arg.content) formData.append('content', arg.content);
+  if (arg.attachment) formData.append('attachment', arg.attachment);
+
+  return api.post(url, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then((res) => res.data.data);
 };
 
 const updateMessageFetcher = async (
@@ -74,7 +81,7 @@ export const useSendMessage = (conversationId: string | null) => {
   );
 
   const sendMessage = useCallback(
-    async (arg: { content: string }) => {
+    async (arg: { content?: string; attachment?: File }) => {
       if (!conversationId || !user) return;
       await trigger(arg);
     },
@@ -104,7 +111,7 @@ export const useUpdateMessage = (conversationId: string | null) => {
           if (!currentPages) return currentPages;
           return currentPages.map(page => ({
             ...page,
-            data: page.data.map(m => 
+            data: page.data.map(m =>
               m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m
             ),
           }));
@@ -137,10 +144,10 @@ export const useDeleteMessage = (conversationId: string | null) => {
             data.newLastMessage
           );
         }
-        
+
         mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
           if (!currentPages) return currentPages;
-          
+
           return currentPages.map(page => ({
             ...page,
             data: page.data.filter(m => m.id !== data.deletedId),

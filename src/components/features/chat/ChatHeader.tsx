@@ -17,7 +17,7 @@ export const ChatHeader = ({ conversation }: ChatHeaderProps) => {
         <div className="flex items-center space-x-3">
           <div className="relative">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={conversation.avatar || "/placeholder.svg"} />
+              <AvatarImage src={conversation.avatar?.small || "/placeholder.svg"} />
               <AvatarFallback className="bg-zinc-700 text-zinc-300">
                 {conversation.title.substring(0, 2)}
               </AvatarFallback>
