@@ -27,7 +27,7 @@ export const useNewMessageListener = () => {
           case 'delete':
             deleteConversationMessage(
               event.conversationId,
-              event.deletedId,
+              // event.deletedId,
               event.wasLastMessage,
               event.newLastMessage
             );

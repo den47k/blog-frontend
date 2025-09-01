@@ -15,7 +15,7 @@ export interface ChatActions {
   updateConversationOnMessageUpdate: (message: Message) => void;
   updateConversationOnMessageDelete: (
     conversationId: string,
-    deletedMessageId: string,
+    // deletedMessageId: string,
     wasLastMessage: boolean,
     newLastMessage: Message | null
   ) => void;
@@ -95,7 +95,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
         }
       }),
 
-    updateConversationOnMessageDelete: (conversationId, deletedMessageId, wasLastMessage, newLastMessage) =>
+    updateConversationOnMessageDelete: (conversationId, wasLastMessage, newLastMessage) =>
       set((state) => {
         const convoId = String(conversationId);
         const convo = state.conversations[convoId];

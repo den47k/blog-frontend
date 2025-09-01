@@ -139,7 +139,7 @@ export const useDeleteMessage = (conversationId: string | null) => {
         if (conversationId) {
           deleteConversationMessage(
             conversationId,
-            data.deletedId,
+            // data.deletedId,
             data.wasLastMessage,
             data.newLastMessage
           );

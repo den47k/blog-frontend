@@ -162,7 +162,7 @@ const PrivateConversationView = () => {
             >
               <div className="relative">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={user.avatar ?? undefined} />
+                  <AvatarImage src={user?.avatar?.small || "/placeholder.svg"} />
                   <AvatarFallback className="bg-zinc-700 text-zinc-300">
                     {user.name
                       .split(" ")
