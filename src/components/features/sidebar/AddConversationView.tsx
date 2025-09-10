@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCreatePrivateConversation } from "@/hooks/chat/useConversations";
 import useApi from "@/hooks/useApi";
 import type { User } from "@/types";
 import { ArrowLeftIcon, AtSign, UserIcon } from "lucide-react";
@@ -73,7 +74,8 @@ export const AddConversationView = ({
 
 const PrivateConversationView = () => {
   const navigate = useNavigate();
-  const { get, post } = useApi();
+  const { get } = useApi();
+  const { createPrivateConversation } = useCreatePrivateConversation();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -103,20 +105,10 @@ const PrivateConversationView = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, get]);
 
-  const handleCreateConversation = async (
-    user: User,
-    shouldJoinNow: boolean
-  ) => {
-    try {
-      await post("/conversations/private", {
-        user_id: user.id,
-        should_join_now: shouldJoinNow,
-      });
+  const handleCreateConversation = async (user: User, shouldJoinNow: boolean) => {
+    const result = await createPrivateConversation(user.id, shouldJoinNow);
 
-      navigate(`/${user.tag}`);
-    } catch (error) {
-      console.error("Failed to create conversation:", error);
-    }
+    if (result.success) navigate(`/${user.tag}`);
   };
 
   return (

@@ -21,8 +21,6 @@ export const ConversationItem = ({ id }: { id: string }) => {
 
   // const otherUser = conversation.type === 'private' ? conversation.participants.find((p) => p.id !== currentUser?.id) : null;
 
-  console.log(conversation.avatar);
-
   return (
     <Link to={`/${routeIdentifier}`} className="block">
       <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-zinc-800 cursor-pointer transition-colors relative">

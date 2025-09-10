@@ -11,6 +11,7 @@ export interface ChatState {
 export interface ChatActions {
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
+  removeConversation: (conversationId: string) => void;
   updateConversationOnNewMessage: (message: Message, currentUserId?: string) => void;
   updateConversationOnMessageUpdate: (message: Message) => void;
   updateConversationOnMessageDelete: (
@@ -58,6 +59,15 @@ export const useChatStore = create<ChatState & ChatActions>()(
 
         state.conversations[conversation.id] = conversation;
         state.conversationOrder.unshift(conversation.id);
+      }),
+
+    removeConversation: (conversationId) =>
+      set((state) => {
+        delete state.conversations[conversationId];
+        state.conversationOrder = state.conversationOrder.filter(id => id !== conversationId);
+        if (state.activeConversationId === conversationId) {
+          state.activeConversationId = null;
+        }
       }),
 
     updateConversationOnNewMessage: (message, currentUserId) =>

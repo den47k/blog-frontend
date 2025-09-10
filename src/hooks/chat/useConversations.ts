@@ -3,6 +3,8 @@ import api from "@/lib/api";
 import { useChatStore } from "@/stores/chat.store";
 import type { Conversation } from "@/types";
 import useSWR from "swr";
+import useApi from "../useApi";
+import { useNavigate } from "react-router";
 
 const swrConfig = {
   revalidateOnFocus: false,
@@ -49,3 +51,49 @@ export const useConversations = () => {
     isValidating,
   };
 };
+
+export const useCreatePrivateConversation = () => {
+  const { post } = useApi();
+  // const { addConversation } = useChatStore();
+
+  const createPrivateConversation = async (userId: string, shouldJoinNow: boolean = false) => {
+    try {
+      await post("/conversations/private", {
+        user_id: userId,
+        should_join_now: shouldJoinNow,
+      });
+
+      // if (shouldJoinNow) addConversation(Response.data.data);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Failed to create conversation:", error);
+
+      return { success: false, error };
+    }
+  }
+
+  return { createPrivateConversation };
+}
+
+export const useDeleteConversation = () => {
+  const { delete: del } = useApi();
+  const { removeConversation } = useChatStore();
+  const navigate = useNavigate();
+
+  const deleteConversation = async (conversationId: string) => {
+    try {
+      await del(`/conversations/${conversationId}`);
+      removeConversation(conversationId);
+      navigate("/");
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Failed to delete conversation:", error);
+
+      return { success: false, error };
+    }
+  }
+
+  return { deleteConversation };
+}

@@ -1,7 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useDeleteConversation } from "@/hooks/chat/useConversations";
 import type { Conversation } from "@/types";
-import { InfoIcon, MoreVerticalIcon } from "lucide-react";
+import { InfoIcon, MoreVerticalIcon, TrashIcon } from "lucide-react";
 
 interface ChatHeaderProps {
   conversation: Conversation;
@@ -10,6 +12,11 @@ interface ChatHeaderProps {
 export const ChatHeader = ({ conversation }: ChatHeaderProps) => {
   // const { user: currentUser } = useAuth();
   // const otherUser = conversation.type === 'private' ? conversation.participants.find((p) => p.id !== currentUser?.id) : null;
+  const { deleteConversation } = useDeleteConversation();
+
+  const handleDelete = async () => {
+    await deleteConversation(conversation.id);
+  };
 
   return (
     <div className="bg-zinc-900 border-b border-zinc-800 p-4">
@@ -47,13 +54,36 @@ export const ChatHeader = ({ conversation }: ChatHeaderProps) => {
           >
             <InfoIcon size={18} />
           </Button>
-          <Button
+
+
+          {/* <Button
             variant="ghost"
             size="sm"
             className="text-zinc-400 hover:text-white hover:bg-zinc-800"
           >
             <MoreVerticalIcon size={18} />
-          </Button>
+          </Button> */}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              >
+                <MoreVerticalIcon size={18} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800">
+              <DropdownMenuItem
+                onClick={handleDelete}
+                className="text-red-400 focus:text-red-400 focus:bg-red-400/10"
+              >
+                <TrashIcon className="mr-2 h-4 w-4" />
+                Delete Conversation
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
