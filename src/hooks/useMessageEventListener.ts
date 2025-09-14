@@ -10,43 +10,6 @@ export const useMessageEventListener = () => {
   const updateConversationMessage = useChatStore(state => state.updateConversationOnMessageUpdate);
   const deleteConversationMessage = useChatStore(state => state.updateConversationOnMessageDelete);
 
-  // useEffect(() => {
-  //   if (user) {
-  //     const channel = echo.private(`user.${user.id}`);
-
-  //     const handleMessageEvent = (event: MessageEventData) => {
-  //       switch (event.operation) {
-  //         case 'create':
-  //           updateConversationOnNewMessage(event.message, user.id);
-  //           break;
-
-  //         case 'update':
-  //           updateConversationMessage(event.message);
-  //           break;
-
-  //         case 'delete':
-  //           deleteConversationMessage(
-  //             event.conversationId,
-  //             // event.deletedId,
-  //             event.wasLastMessage,
-  //             event.newLastMessage
-  //           );
-  //           break;
-  //       }
-  //       if (event.operation === 'create') {
-
-  //       }
-  //     }
-
-  //     channel.listen(".MessageEvent", handleMessageEvent);
-
-  //     return () => {
-  //       channel.stopListening(".MessageEvent");
-  //       echo.leave(`user.${user.id}`);
-  //     };
-  //   }
-  // }, [user, updateConversationOnNewMessage]);
-
   useEffect(() => {
   if (user) {
     const channel = echo.private(`user.${user.id}`);
