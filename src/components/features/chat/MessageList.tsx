@@ -3,7 +3,7 @@ import { MessageItem } from "./MessageItem";
 import { memo, useCallback, useRef, useLayoutEffect, useEffect, useState } from "react";
 import { useChatStore } from "@/stores/chat.store";
 import echo from "@/lib/echo";
-import type { PaginatedMessages, MessageEventData, Message } from "@/types";
+import type { PaginatedMessages, Message } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMessages } from "@/hooks/chat/useMessages";
 import { useDeleteMessage, useUpdateMessage } from "@/hooks/chat/useMessageActions";
@@ -70,78 +70,157 @@ export const MessageList = memo(({ conversationId }: MessageListProps) => {
     };
   }, [conversationId, setActiveConversation]);
 
+  // useEffect(() => {
+  //   if (!conversationId || !user) return;
+
+  //   const channel = echo.private(`conversation.${conversationId}`);
+
+  //   const handleNewMessage = (event: MessageEventData) => {
+  //     const { operation, message } = event;
+
+  //     switch (operation) {
+  //       case 'create':
+  //         updateConversationOnNewMessage(message, user.id);
+  //         markAsRead();
+
+  //         if (message.conversationId === conversationId) {
+
+  //           mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+  //             if (!currentPages || currentPages.length === 0) {
+  //               const newPage: PaginatedMessages = {
+  //                 data: [message],
+  //                 links: { first: null, last: null, prev: null, next: null },
+  //                 meta: { current_page: 1, last_page: 1, per_page: 30, total: 1 },
+  //               };
+  //               return [newPage];
+  //             }
+
+  //             if (currentPages[0].data.some(m => m.id === message.id)) {
+  //               return currentPages;
+  //             }
+
+  //             const updatedPages = [...currentPages];
+  //             updatedPages[0] = {
+  //               ...updatedPages[0],
+  //               data: [message, ...updatedPages[0].data],
+  //             };
+
+  //             return updatedPages;
+  //           }, false);
+  //         }
+  //         break;
+
+  //       case 'update':
+  //         if (message.conversationId === conversationId) {
+  //           mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+  //             if (!currentPages) return currentPages;
+  //             return currentPages.map(page => ({
+  //               ...page,
+  //               data: page.data.map(m =>
+  //                 m.id === message.id ? { ...m, ...message } : m
+  //               ),
+  //             }));
+  //           }, false);
+  //         }
+  //         break;
+
+  //       case 'delete':
+  //         mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+  //           if (!currentPages) return currentPages;
+  //           return currentPages.map(page => ({
+  //             ...page,
+  //             data: page.data.filter(m => m.id !== event.deletedId),
+  //           }));
+  //         }, false);
+  //         break;
+  //     }
+  //   };
+
+  //   channel.listen('.MessageEvent', handleNewMessage)
+
+  //   return () => {
+  //     channel.stopListening(".MessageEvent");
+  //     echo.leave(`conversation.${conversationId}`);
+  //   }
+  // }, [conversationId, mutateMessages, updateConversationOnNewMessage]);
+
   useEffect(() => {
     if (!conversationId || !user) return;
 
     const channel = echo.private(`conversation.${conversationId}`);
 
-    const handleNewMessage = (event: MessageEventData) => {
-      const { operation, message } = event;
+    const handleMessageCreated = (event: { message: Message }) => {
+      const { message } = event;
+      updateConversationOnNewMessage(message, user.id);
+      markAsRead();
 
-      switch (operation) {
-        case 'create':
-          updateConversationOnNewMessage(message, user.id);
-          markAsRead();
-
-          if (message.conversationId === conversationId) {
-
-            mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
-              if (!currentPages || currentPages.length === 0) {
-                const newPage: PaginatedMessages = {
-                  data: [message],
-                  links: { first: null, last: null, prev: null, next: null },
-                  meta: { current_page: 1, last_page: 1, per_page: 30, total: 1 },
-                };
-                return [newPage];
-              }
-
-              if (currentPages[0].data.some(m => m.id === message.id)) {
-                return currentPages;
-              }
-
-              const updatedPages = [...currentPages];
-              updatedPages[0] = {
-                ...updatedPages[0],
-                data: [message, ...updatedPages[0].data],
-              };
-
-              return updatedPages;
-            }, false);
+      if (message.conversationId === conversationId) {
+        mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+          if (!currentPages || currentPages.length === 0) {
+            const newPage: PaginatedMessages = {
+              data: [message],
+              links: { first: null, last: null, prev: null, next: null },
+              meta: { current_page: 1, last_page: 1, per_page: 30, total: 1 },
+            };
+            return [newPage];
           }
-          break;
 
-        case 'update':
-          if (message.conversationId === conversationId) {
-            mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
-              if (!currentPages) return currentPages;
-              return currentPages.map(page => ({
-                ...page,
-                data: page.data.map(m =>
-                  m.id === message.id ? { ...m, ...message } : m
-                ),
-              }));
-            }, false);
+          if (currentPages[0].data.some(m => m.id === message.id)) {
+            return currentPages;
           }
-          break;
 
-        case 'delete':
-          mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
-            if (!currentPages) return currentPages;
-            return currentPages.map(page => ({
-              ...page,
-              data: page.data.filter(m => m.id !== event.deletedId),
-            }));
-          }, false);
-          break;
+          const updatedPages = [...currentPages];
+          updatedPages[0] = {
+            ...updatedPages[0],
+            data: [message, ...updatedPages[0].data],
+          };
+
+          return updatedPages;
+        }, false);
       }
     };
 
-    channel.listen('.MessageEvent', handleNewMessage)
+    const handleMessageUpdated = (event: { message: Message }) => {
+      const { message } = event;
+      if (message.conversationId === conversationId) {
+        mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+          if (!currentPages) return currentPages;
+          return currentPages.map(page => ({
+            ...page,
+            data: page.data.map(m =>
+              m.id === message.id ? { ...m, ...message } : m
+            ),
+          }));
+        }, false);
+      }
+    };
+
+    const handleMessageDeleted = (event: {
+      conversationId: string;
+      deletedId: string;
+      wasLastMessage: boolean;
+      newLastMessage: Message | null
+    }) => {
+      const { deletedId } = event;
+      mutateMessages((currentPages: PaginatedMessages[] | undefined) => {
+        if (!currentPages) return currentPages;
+        return currentPages.map(page => ({
+          ...page,
+          data: page.data.filter(m => m.id !== deletedId),
+        }));
+      }, false);
+    };
+
+    channel.listen('.MessageCreatedEvent', handleMessageCreated);
+    channel.listen('.MessageUpdatedEvent', handleMessageUpdated);
+    channel.listen('.MessageDeletedEvent', handleMessageDeleted);
 
     return () => {
-      channel.stopListening(".MessageEvent");
+      channel.stopListening('.MessageCreatedEvent', handleMessageCreated);
+      channel.stopListening('.MessageUpdatedEvent', handleMessageUpdated);
+      channel.stopListening('.MessageDeletedEvent', handleMessageDeleted);
       echo.leave(`conversation.${conversationId}`);
-    }
+    };
   }, [conversationId, mutateMessages, updateConversationOnNewMessage]);
 
   useEffect(() => {

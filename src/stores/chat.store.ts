@@ -96,12 +96,14 @@ export const useChatStore = create<ChatState & ChatActions>()(
 
     updateConversationOnMessageUpdate: (message) =>
       set((state) => {
+        console.log(message);
         const convoId = String(message.conversationId);
-        const convo = state.conversations[convoId];
-        if (!convo || !convo.lastMessage) return;
+        const conversation = state.conversations[convoId];
 
-        if (String(convo.lastMessage.id) === String(message.id)) {
-          convo.lastMessage.content = message.content;
+        if (!conversation || !conversation.lastMessage) return;
+
+        if (String(conversation.lastMessage.id) === String(message.id)) {
+          conversation.lastMessage.content = message.content;
         }
       }),
 
