@@ -1,9 +1,9 @@
-import { useMessageEventListener } from "@/hooks/useMessageEventListener";
+import { useChatEventListener } from "@/hooks/useChatEventListener";
 import { AppSidebar } from "../features/sidebar/AppSidebar";
 import { Outlet } from "react-router";
 
 export const AppLayout = () => {
-  useMessageEventListener();
+  useChatEventListener();
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-zinc-950 flex">
