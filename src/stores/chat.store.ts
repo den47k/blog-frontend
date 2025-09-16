@@ -18,7 +18,8 @@ export interface ChatActions {
     conversationId: string,
     // deletedMessageId: string,
     wasLastMessage: boolean,
-    newLastMessage: Message | null
+    newLastMessage: Message | null,
+    hasUnread: boolean
   ) => void;
   markConversationAsRead: (ConversationId: string) => void;
   setActiveConversation: (conversationId: string | null) => void;
@@ -107,7 +108,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
         }
       }),
 
-    updateConversationOnMessageDelete: (conversationId, wasLastMessage, newLastMessage) =>
+    updateConversationOnMessageDelete: (conversationId, wasLastMessage, newLastMessage, hasUnread) =>
       set((state) => {
         const convoId = String(conversationId);
         const convo = state.conversations[convoId];
@@ -120,13 +121,13 @@ export const useChatStore = create<ChatState & ChatActions>()(
             convo.lastMessage = null;
           }
 
-          convo.hasUnread = false;
-
           state.conversationOrder = [
             conversationId,
             ...state.conversationOrder.filter(id => id !== conversationId),
           ];
         }
+
+        convo.hasUnread = hasUnread;
       }),
 
     markConversationAsRead: (conversationId: string) =>

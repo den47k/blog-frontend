@@ -28,12 +28,14 @@ export const useChatEventListener = () => {
         conversationId: string;
         deletedId: string;
         wasLastMessage: boolean;
-        newLastMessage: Message | null
+        newLastMessage: Message | null;
+        hasUnread: boolean;
       }) => {
         deleteConversationMessage(
           event.conversationId,
           event.wasLastMessage,
-          event.newLastMessage
+          event.newLastMessage,
+          event.hasUnread,
         );
       };
 
