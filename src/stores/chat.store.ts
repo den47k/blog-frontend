@@ -108,7 +108,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
         }
       }),
 
-    updateConversationOnMessageDelete: (conversationId, wasLastMessage, newLastMessage, hasUnread) =>
+    updateConversationOnMessageDelete: (conversationId, wasLastMessage, newLastMessage, hasUnread = false) =>
       set((state) => {
         const convoId = String(conversationId);
         const convo = state.conversations[convoId];
