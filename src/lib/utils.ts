@@ -5,23 +5,37 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const formatTimestamp = (timestamp: string): string => {
+export const formatMessageTime = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString([], { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false 
+  });
+};
+
+export const formatConversationTime = (timestamp: string): string => {
   const date = new Date(timestamp);
   const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInHours = diffInMs / (1000 * 60 * 60);
   
-  if (diffInSeconds < 60) {
-    return 'now';
-  } else if (diffInSeconds < 3600) {
-    return `${Math.floor(diffInSeconds / 60)}m`;
-  } else if (diffInSeconds < 86400) {
-    return `${Math.floor(diffInSeconds / 3600)}h`;
-  } else if (diffInSeconds < 604800) {
-    return `${Math.floor(diffInSeconds / 86400)}d`;
+  if (diffInHours < 24) {
+    // Less than 24 hours ago - show time
+    return date.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+  } else if (diffInHours < 168) { // 168 hours = 7 days
+    // Less than a week ago - show day of week
+    return date.toLocaleDateString([], { weekday: 'short' });
   } else {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
+    // More than a week ago - show date
+    return date.toLocaleDateString([], { 
+      month: 'numeric', 
+      day: 'numeric',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
     });
   }
 };

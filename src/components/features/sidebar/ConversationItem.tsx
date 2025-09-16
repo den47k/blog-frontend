@@ -2,7 +2,7 @@ import { useConversation } from "@/stores/chat.store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageCircle } from "lucide-react";
 import { Link } from "react-router";
-import { formatTimestamp } from "@/lib/utils";
+import { formatConversationTime } from "@/lib/utils";
 
 export const ConversationItem = ({ id }: { id: string }) => {
   const conversation = useConversation(id);
@@ -59,7 +59,7 @@ export const ConversationItem = ({ id }: { id: string }) => {
               </h3>
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="text-xs text-zinc-500">
-                {formatTimestamp(timestamp)}
+                {formatConversationTime(timestamp)}
               </span>
             </div>
           </div>

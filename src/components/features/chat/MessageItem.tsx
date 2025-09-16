@@ -6,7 +6,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatTimestamp } from "@/lib/utils";
+import { formatMessageTime } from "@/lib/utils";
 import type { Message } from "@/types";
 import { Copy, Edit3, Reply, Trash2 } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
@@ -65,7 +65,7 @@ export const MessageItem = memo(
                 className={`flex-shrink-0 text-xs ${isOwn ? "text-rose-200 ml-auto" : "text-zinc-500"}`}
                 style={{ minWidth: "fit-content" }}
               >
-                {formatTimestamp(message.createdAt)}
+                {formatMessageTime(message.createdAt)}
               </span>
             </div>
           </div>
@@ -83,7 +83,7 @@ export const MessageItem = memo(
                 }`}
               style={{ minWidth: "fit-content" }}
             >
-              {formatTimestamp(message.createdAt)}
+              {formatMessageTime(message.createdAt)}
             </span>
           </div>
         )}

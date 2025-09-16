@@ -120,6 +120,8 @@ export const useChatStore = create<ChatState & ChatActions>()(
             convo.lastMessage = null;
           }
 
+          convo.hasUnread = false;
+
           state.conversationOrder = [
             conversationId,
             ...state.conversationOrder.filter(id => id !== conversationId),
