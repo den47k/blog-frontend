@@ -6,7 +6,7 @@ interface AuthLayoutProps {
 }
 
 export const AuthLayout = ({
-  title = "DarkChat",
+  title = "Whisp",
   description,
 }: AuthLayoutProps) => {
   return (

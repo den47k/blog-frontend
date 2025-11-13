@@ -150,7 +150,7 @@ export const MessageInput = ({ conversationId }: { conversationId: string; }) =>
           <Textarea
             ref={textAreaRef}
             placeholder={attachment ? "Add a caption (optional)" : "Type a message..."}
-            className="min-h-[40px] max-h-[132px] bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 resize-none"
+            className="min-h-8 max-h-[132px] bg-zinc-800 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 focus:border-rose-500 focus:ring-rose-500 resize-none"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
