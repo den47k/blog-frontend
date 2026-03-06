@@ -105,7 +105,10 @@ const PrivateConversationView = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, get]);
 
-  const handleCreateConversation = async (user: User, shouldJoinNow: boolean) => {
+  const handleCreateConversation = async (
+    user: User,
+    shouldJoinNow: boolean
+  ) => {
     const result = await createPrivateConversation(user.id, shouldJoinNow);
 
     if (result.success) navigate(`/${user.tag}`);
@@ -123,9 +126,7 @@ const PrivateConversationView = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <p className="text-xs text-zinc-500 mt-1">
-          Search by username or @tag
-        </p>
+        <p className="text-xs text-zinc-500 mt-1">Search by username or @tag</p>
       </div>
 
       <div className="space-y-2">
@@ -142,7 +143,9 @@ const PrivateConversationView = () => {
         )}
 
         {!isSearching && !searchQuery && (
-            <p className="text-zinc-500 text-center py-4">Start typing to find a user.</p>
+          <p className="text-zinc-500 text-center py-4">
+            Start typing to find a user.
+          </p>
         )}
 
         {!isSearching &&
@@ -154,7 +157,9 @@ const PrivateConversationView = () => {
             >
               <div className="relative">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={user?.avatar?.small || "/placeholder.svg"} />
+                  <AvatarImage
+                    src={user?.avatar?.small || "/placeholder.svg"}
+                  />
                   <AvatarFallback className="bg-zinc-700 text-zinc-300">
                     {user.name
                       .split(" ")
