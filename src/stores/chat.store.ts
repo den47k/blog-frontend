@@ -19,7 +19,6 @@ export interface ChatActions {
   updateConversationOnMessageUpdate: (message: Message) => void;
   updateConversationOnMessageDelete: (
     conversationId: string,
-    // deletedMessageId: string,
     wasLastMessage: boolean,
     newLastMessage: Message | null,
     hasUnread: boolean,
@@ -113,7 +112,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
       conversationId,
       wasLastMessage,
       newLastMessage,
-      hasUnread = false,
+      hasUnread,
     ) =>
       set((state) => {
         const convoId = String(conversationId);
