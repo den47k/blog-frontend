@@ -50,7 +50,7 @@ export type MessageAttachment = {
 export type Message = {
   id: string;
   content: string;
-  senderId: string;
+  // senderId: string;
   conversationId: string;
   editedAt: string;
   createdAt: string;
@@ -83,7 +83,7 @@ export type PaginatedMessages = Paginated<Message>;
 
 // events
 export interface MessageEventData {
-  operation: 'create' | 'update' | 'delete';
+  operation: "create" | "update" | "delete";
   message: Message;
   deletedId: string;
   conversationId: string;
